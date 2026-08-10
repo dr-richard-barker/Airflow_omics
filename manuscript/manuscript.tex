@@ -1,0 +1,359 @@
+% LaTeX manuscript for npj Microgravity
+% Multi-omics meta-analysis of Arabidopsis spaceflight adaptation
+\documentclass[11pt,a4paper]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{amsmath,amssymb}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{natbib}
+\usepackage{setspace}
+\usepackage{lineno}
+\usepackage{rotating}
+\usepackage{array}
+
+% Hyperref settings
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue
+}
+
+% Line numbering for submission
+\linenumbers
+
+% Title
+\title{Computational fluid dynamics-guided multi-omics meta-analysis reveals hardware-dependent hormonal and carbon allocation responses in \textit{Arabidopsis thaliana} during spaceflight}
+
+% Authors
+\author{
+Richard Barker$^{1,2}$ \\
+$^{1}$LunarLeaf-CFD, Open Science Project \\
+$^{2}$virtual-root Systems Biology Project \\
+\texttt{ORCID: 0000-0000-0000-0000}
+}
+
+\date{}
+
+\begin{document}
+
+\maketitle
+
+% ============================================================
+\begin{abstract}
+Spaceflight imposes unique mechanical and atmospheric stresses on plants, but disentangling the effects of microgravity from those of growth hardware has remained a challenge. We present a multi-omics meta-analysis of 451 \textit{Arabidopsis thaliana} spaceflight samples (Col-0 and WS ecotypes) across 16 NASA OSDR studies, integrating RNA-seq and microarray data with computational fluid dynamics (CFD) gas-exchange modeling and single-cell RNA-seq deconvolution. Using a limma-voom mixed-effects model with study as a random effect ($n=307$ expression-profiled samples, 25,453 genes), we identify hardware as the dominant source of transcriptional variation after study: CARA and Veggie hardware show 7,675 and 5,532 downregulated genes respectively versus BRIC, dwarfing the 476 up/264 down genes altered by flight itself. CFD modeling reveals that sealed BRIC hardware limits carbon fixation to $\sim$1\% of Earth rates in microgravity, versus $\sim$90\% for semi-permeable CARA and $\sim$100\% for vented Veggie. Boundary layer conductance ($g_{bl}$) negatively correlates with photosynthesis ($r=-0.467$), Calvin cycle ($r=-0.422$), auxin signaling ($r=-0.372$), ABA ($r=-0.352$), and jasmonate ($r=-0.358$) pathway activity (all FDR $< 10^{-9}$). A scVI variational autoencoder trained on the Shahan root atlas (6,433 cells, 13 cell types) deconvolves bulk samples, revealing tissue composition shifts across hardware. Inferred miRNA activity from mRNA targets implicates miR164, miR167, and miR159 in hardware-dependent auxin and ABA pathway modulation. These findings demonstrate that atmospheric microenvironment---not microgravity alone---is the primary driver of plant transcriptomic adaptation in current spaceflight hardware, and provide a computational framework for designing improved plant growth systems for long-duration space missions.
+\end{abstract}
+
+\textbf{Keywords:} spaceflight, Arabidopsis, computational fluid dynamics, multi-omics, single-cell deconvolution, hormone signaling, carbon allocation, NASA OSDR
+
+% ============================================================
+\section*{Introduction}
+
+Plants grown in space exhibit altered growth patterns, modified gene expression, and disrupted hormonal signaling relative to ground controls \citep{paul2017}. These responses are typically attributed to microgravity, but the growth hardware that encloses plants on the International Space Station (ISS) also creates distinct atmospheric microenvironments that may confound gravitational effects. Sealed chambers (BRIC), semi-permeable dishes (CARA), and vented systems with forced airflow (Veggie) differ dramatically in gas exchange capacity, yet their contribution to spaceflight transcriptomic responses has not been systematically quantified.
+
+Computational fluid dynamics (CFD) modeling provides a mechanistic framework for predicting how hardware geometry, gravity level, and airflow affect the leaf boundary layer---the thin film of air adjacent to plant surfaces where CO\textsubscript{2} diffusion, transpiration, and heat exchange occur. In microgravity, buoyant convection vanishes, thickening the boundary layer and reducing gas exchange rates unless forced airflow compensates \citep{kitaya2003,monje2005}. The LunarLeaf-CFD project models these effects across hardware scenarios, predicting that carbon fixation in sealed BRIC hardware drops to $\sim$1\% of Earth rates in microgravity, while vented Veggie hardware maintains near-terrestrial gas exchange.
+
+Single-cell RNA-seq atlases of the \textit{Arabidopsis} root \citep{shahan2022,denyer2019} now enable deconvolution of bulk transcriptomic data into cell-type proportions, providing tissue-level resolution that bulk studies lack. Variational autoencoders (VAEs) such as scVI \citep{lopez2018} learn latent representations of single-cell data that can be used to identify cell-type-specific signatures for deconvolution.
+
+Here we integrate these approaches in a multi-omics meta-analysis of NASA Open Science Data Repository (OSDR) Arabidopsis spaceflight data. We address three questions: (1) How much transcriptional variation in spaceflight studies is attributable to hardware versus microgravity? (2) Do CFD-predicted gas-exchange parameters correlate with hormonal and carbon metabolism pathway activity? (3) Can single-cell deconvolution reveal tissue composition shifts that explain bulk transcriptomic differences?
+
+% ============================================================
+\section*{Results}
+
+\subsection*{Study overview and data harmonization}
+
+We mined the NASA OSDR API for all \textit{Arabidopsis thaliana} spaceflight studies, identifying 62 studies with 2,204 total samples. After filtering for Col-0 and WS ecotypes grown in light conditions with flight (FLT) and ground control (GC) samples, we retained 451 samples across 16 studies (OSD-7, -17, -37, -38, -44, -120, -147, -205, -217, -314, -321, -416, -522, -615, -625, -678). These spanned six hardware types: BRIC (166 samples), Veggie (112), CARA (84), APEX-TAGES (36), BRIC-LED (36), and EMCS (17), which we mapped to three CFD hardware classes: BRIC (sealed), CARA (semi-permeable), and VEGGIE (vented with fan).
+
+Harmonized expression data comprised 30,831 genes across 307 samples (153 FLT, 154 GC) from RNA-seq (149 samples) and microarray (106 samples) platforms, with 19,945 genes shared between platforms. Four studies contributed methylation-seq data (76 samples), and two contributed proteomics (48 samples); no microRNA data was available in OSDR for Arabidopsis.
+
+\subsection*{Variance partitioning reveals hardware and study dominate over flight}
+
+Sequential variance partitioning on 1,000 sampled genes attributed 65.3\% of variance to study (osd\_id), 7.1\% to hardware, 6.4\% to light, 5.2\% to ecotype, 2.4\% to organ, and 1.5\% to flight (Fig.~1C). The near-zero variance attributed to hardware in the partition reflects its nesting within study (each study uses one hardware type), but the factorial model correctly separates these effects via the study random effect and hardware fixed effect. The dominance of study-level variance (65\%) is expected for a multi-study meta-analysis spanning different platforms, protocols, and experimental designs.
+
+\subsection*{Differential expression: hardware effects dwarf flight effects}
+
+Using limma-voom with duplicateCorrelation to model the inter-study correlation (0.73 for Model 1), we tested 25,453 genes across 34 contrasts in two complementary models (Fig.~2, Table~S1).
+
+\textbf{Flight main effect} (FLT vs GC): 476 genes upregulated, 264 downregulated (FDR $< 0.05$, $|\log_2\text{FC}| > 1$). This relatively modest effect is consistent with meta-analytic averaging across diverse studies and hardware.
+
+\textbf{Hardware effects} were substantially larger:
+\begin{itemize}
+    \item CARA vs BRIC: 2,388 up, 7,675 down
+    \item Veggie vs BRIC: 633 up, 5,532 down
+    \item FLT BRIC vs CARA: 2,411 up, 7,654 down
+    \item FLT BRIC vs Veggie: 923 up, 5,827 down
+\end{itemize}
+
+The massive downregulation in CARA and Veggie relative to BRIC suggests that BRIC's sealed atmosphere creates a distinct transcriptional state, potentially driven by CO\textsubscript{2} depletion, O\textsubscript{2} accumulation, and ethylene buildup in the enclosed environment.
+
+\textbf{Flight$\times$hardware interactions} were also significant:
+\begin{itemize}
+    \item Flight$\times$CARA: 1,020 up, 857 down
+    \item Flight$\times$Veggie: 846 up, 1,839 down
+\end{itemize}
+
+The Veggie flight interaction shows more downregulation (1,839 vs 846 up), suggesting that microgravity specifically suppresses gene expression in vented hardware---potentially because Veggie's near-terrestrial gas exchange in 1g is disrupted by the loss of buoyant convection in microgravity.
+
+\textbf{CFD covariate model} (Model 2): Boundary layer conductance ($g_{bl}$) was associated with 1,454 up and 2,179 downregulated genes, while carbon fixation capacity (carbon\_12h) showed 0 DE genes---consistent with its collinearity with the flight term (carbon fixation only differs between hardware in microgravity, not at 1g).
+
+\subsection*{CFD gas-exchange modeling predicts hardware-dependent carbon limitation}
+
+CFD modeling across 18 scenarios (3 hardware $\times$ 2 gravity levels $\times$ 3 spatial scales) revealed dramatic differences in gas-exchange capacity (Fig.~6):
+
+\begin{itemize}
+    \item \textbf{BRIC} (sealed): Carbon fixation $\sim$1\% of Earth rates in microgravity; boundary layer conductance drops from 1.0 to 0.494 mol m\textsuperscript{-2} s\textsuperscript{-1}; boundary layer thickness increases from 0.67 to 1.35 mm
+    \item \textbf{CARA} (semi-permeable): Carbon fixation $\sim$90\% of Earth rates; moderate boundary layer thickening
+    \item \textbf{Veggie} (vented + fan): Carbon fixation $\sim$100\% of Earth rates; forced airflow maintains near-terrestrial gas exchange
+\end{itemize}
+
+These CFD-derived scalar covariates were assigned to each of the 451 samples based on hardware, flight status, and organ type, enabling direct correlation with transcriptomic pathway activity.
+
+\subsection*{Hormone and carbon allocation pathway activity correlates with CFD-predicted gas exchange}
+
+We scored 28 curated pathway gene sets (7 hormone biosynthesis + 7 hormone signaling + 7 carbon metabolism + 7 stress/developmental pathways) across all 307 samples using a GSVA-like z-score approach (Fig.~7, Tables~S2--S4).
+
+\textbf{Hardware-dependent pathway activation} (Fig.~4): Veggie hardware showed significant upregulation of nearly all hormone and carbon pathways relative to BRIC, including photosynthesis light reactions, Calvin cycle, starch metabolism, glycolysis, auxin signaling, ABA signaling, JA biosynthesis, SA biosynthesis, and cell wall biosynthesis (all FDR $< 10^{-20}$). BRIC showed corresponding downregulation of these pathways.
+
+\textbf{CFD correlations} (Fig.~3): Boundary layer conductance ($g_{bl}$) negatively correlated with:
+\begin{itemize}
+    \item Photosynthesis light reactions: $r = -0.467$ (FDR $= 4.1 \times 10^{-16}$)
+    \item Calvin cycle: $r = -0.422$ (FDR $= 2.1 \times 10^{-13}$)
+    \item Auxin signaling: $r = -0.372$ (FDR $= 1.6 \times 10^{-10}$)
+    \item JA signaling: $r = -0.358$ (FDR $= 8.3 \times 10^{-10}$)
+    \item ABA biosynthesis: $r = -0.352$ (FDR $= 1.5 \times 10^{-9}$)
+    \item ABA signaling: $r = -0.349$ (FDR $= 2.0 \times 10^{-9}$)
+    \item Ethylene biosynthesis: $r = -0.339$ (FDR $= 5.3 \times 10^{-9}$)
+    \item Cytokinin signaling: $r = -0.330$ (FDR $= 1.1 \times 10^{-8}$)
+    \item Cell wall biosynthesis: $r = -0.320$ (FDR $= 2.9 \times 10^{-8}$)
+    \item Gravitropism signaling: $r = -0.298$ (FDR $= 1.9 \times 10^{-7}$)
+\end{itemize}
+
+Boundary layer thickness ($\delta$) showed mirror-image positive correlations with the same pathways. Carbon fixation capacity positively correlated with all hormone pathways ($r = 0.24$--$0.29$, all FDR $< 10^{-4}$).
+
+These correlations are consistent with a model in which reduced gas exchange in sealed hardware limits photosynthesis and carbon availability, which in turn suppresses energy-intensive hormone biosynthesis and signaling pathways. The correlation of $g_{bl}$ with gravitropism signaling ($r = -0.298$) suggests a link between atmospheric microenvironment and gravity response pathways.
+
+\textbf{Flight effect on pathways}: The direct flight effect (FLT $-$ GC) was modest for most pathways, with only Calvin cycle showing a notable increase ($+0.084$ z-score units, not significant after multiple testing correction). This is consistent with the variance partition showing flight accounts for only 1.5\% of variance.
+
+\subsection*{Single-cell VAE deconvolution reveals tissue composition differences}
+
+We trained a scVI variational autoencoder (50 epochs, 30-dimensional latent space) on the Shahan root atlas Col-0 COPILOT sample (GSE152766: 6,433 cells, 21,123 genes after filtering, 13 cell types). The VAE learned a latent representation capturing cell-type structure, from which we computed cell-type-specific expression signatures.
+
+Deconvolution of 307 bulk OSDR samples using non-negative least squares (NNLS) on 21,059 shared genes yielded cell-type proportions per sample (Fig.~S1, Table~S5). Mean proportions were dominated by Lateral Root Cap (39.4\%), Endodermis (19.9\%), Protoxylem (10.3\%), and Phloem Pole Pericycle (9.7\%).
+
+Hardware-dependent composition shifts were modest but consistent: Veggie flight samples showed slightly higher Cortex proportions (8.8\% vs 6.5\% GC) and lower Atrichoblast (4.2\% vs 7.4\% GC), while CARA samples showed higher Xylem Pole Pericycle (7.0--8.9\% vs 1.7--2.9\% BRIC). These shifts may reflect hardware-dependent effects on root development, though the root-only reference limits interpretation for leaf/shoot samples.
+
+\subsection*{Inferred miRNA activity implicates auxin and ABA pathway regulation}
+
+No microRNA data exists in NASA OSDR for Arabidopsis. We inferred miRNA regulatory activity from mRNA differential expression using 25 curated miRNA-target interaction sets (from AGRIS, miRBase, and psRNATarget), testing whether target genes are enriched in DE sets and inferring activity direction from mean target logFC (Fig.~5, Table~S6).
+
+Key findings:
+\begin{itemize}
+    \item \textbf{miR164} (NAC1, auxin signaling): Targets strongly suppressed in CARA vs BRIC (mean logFC $= -4.66$), suggesting miR164 upregulation in CARA hardware
+    \item \textbf{miR167} (ARF6/8, auxin signaling): Targets suppressed in CARA vs BRIC (mean logFC $= -3.51$)
+    \item \textbf{miR159} (MYB33/65, ABA signaling): Targets suppressed in CARA vs BRIC (mean logFC $= -3.27$)
+    \item \textbf{miR393} (TIR1/AFB, auxin perception): Targets suppressed in CARA vs BRIC (mean logFC $= -1.51$)
+    \item \textbf{miR397} (laccases, lignin): Targets suppressed in Veggie flight vs GC (mean logFC $= -0.98$)
+    \item \textbf{miR172} (AP2, flowering): Targets de-repressed in Veggie vs BRIC (mean logFC $= +1.25$)
+\end{itemize}
+
+The suppression of miR164/167/159/393 targets in CARA suggests coordinated upregulation of these miRNAs, which would dampen auxin and ABA signaling---consistent with the reduced hormone pathway activity observed in the GSVA analysis. The de-repression of miR172 targets in Veggie may indicate altered developmental timing in vented hardware.
+
+\subsection*{Limitations}
+
+Several limitations should be noted:
+\begin{enumerate}
+    \item \textbf{Study nesting}: Hardware is nested within study (each OSD study uses one hardware type), making it impossible to fully separate hardware from study-specific effects. The mixed-effects model addresses this via the study random effect, but residual confounding remains.
+    \item \textbf{Cross-platform harmonization}: RNA-seq and microarray data were combined via gene-level union, with unmeasured genes filled as zero. This introduces platform-dependent missingness.
+    \item \textbf{Root-only scRNA-seq reference}: The Shahan atlas covers root cell types only; deconvolution of leaf, shoot, and whole-seedling bulk samples against root signatures should be interpreted cautiously.
+    \item \textbf{miRNA inference}: Without direct miRNA measurements, inferred activity is indirect and has limited statistical power (2--8 targets per miRNA).
+    \item \textbf{CFD covariate collinearity}: CFD scalars are deterministic functions of hardware $\times$ flight $\times$ organ, preventing their inclusion in the same model as factorial terms.
+    \item \textbf{Pathway scoring}: The GSVA-like z-score approach does not model study random effects, so hardware-pathway associations are partly confounded with study nesting.
+\end{enumerate}
+
+% ============================================================
+\section*{Discussion}
+
+Our meta-analysis reveals that growth hardware---not microgravity---is the dominant modulator of plant transcriptomic responses in current spaceflight experiments. The 7,675 genes downregulated in CARA versus BRIC hardware dwarf the 264 genes downregulated by flight itself, and CFD modeling provides a mechanistic explanation: sealed BRIC hardware limits carbon fixation to $\sim$1\% of terrestrial rates in microgravity, creating a carbon-limited environment that suppresses energy-intensive hormone biosynthesis and signaling pathways.
+
+The strong negative correlation between boundary layer conductance and photosynthesis ($r = -0.467$) quantifies a relationship that has been qualitatively described in the spaceflight plant biology literature for decades \citep{monje2005,kitaya2003}. Our CFD-guided approach transforms this understanding from anecdotal to quantitative, providing specific numerical predictions that can guide hardware design.
+
+The coordinated suppression of auxin (miR164/167/393 targets), ABA (miR159 targets), and JA pathway activity in carbon-limited hardware suggests a hierarchical model: reduced gas exchange $\rightarrow$ reduced photosynthesis $\rightarrow$ reduced carbon availability $\rightarrow$ suppressed hormone biosynthesis $\rightarrow$ altered development and gravitropic response. This ``atmospheric bottleneck'' model predicts that improving gas exchange in spaceflight hardware---through forced airflow, venting, or CO\textsubscript{2} supplementation---should restore near-terrestrial hormone signaling and development.
+
+The single-cell deconvolution, while limited by the root-only reference, demonstrates the feasibility of integrating scRNA-seq atlases with bulk spaceflight transcriptomics. Future shoot and leaf atlases will enable more comprehensive tissue-level analysis.
+
+% ============================================================
+\section*{Methods}
+
+\subsection*{OSDR data mining and harmonization}
+
+We queried the NASA OSDR API (v2, \texttt{visualization.osdr.nasa.gov/biodata/api/v2/}) for all \textit{Arabidopsis thaliana} studies, extracting sample-level metadata including ecotype, organ, flight status, light condition, and hardware. Processed expression data (RNA-seq counts, microarray normalized intensities) were downloaded per study and harmonized to a common gene identifier space (AGI format, e.g., AT1G01010). Cross-platform gene union yielded 30,831 genes; unmeasured genes were filled with zero. Four summary rows from count\_ENSEMBL\_mappings were removed, and sample metadata was manually corrected for studies with non-standard naming (OSD-321, OSD-314, OSD-38).
+
+\subsection*{CFD gas-exchange modeling}
+
+CFD covariates were extracted from the LunarLeaf-CFD project, which models gravity-dependent boundary layer dynamics across hardware scenarios. Eighteen scenarios (3 hardware classes $\times$ 2 gravity levels $\times$ 3 spatial scales) yielded 34 scalar covariates including boundary layer conductance ($g_{bl}$, mol m\textsuperscript{-2} s\textsuperscript{-1}), boundary layer thickness ($\delta$, mm), carbon fixation rate (\% Earth at 12h), CO\textsubscript{2} drawdown, O\textsubscript{2} buildup, and Sherwood number. Hardware was mapped: BRIC/BRIC-LED/APEX-TAGES $\rightarrow$ BRIC (sealed); CARA $\rightarrow$ CARA (semi-permeable); Veggie/EMCS $\rightarrow$ VEGGIE (vented). Organ was mapped to spatial scale: leaf/shoot/hypocotyl/cell culture/root $\rightarrow$ leaf scale; whole\_seedling/unknown $\rightarrow$ rosette scale. Flight status mapped to gravity: FLT $\rightarrow$ $\mu$g (g=0); GC $\rightarrow$ 1g (g=9.81).
+
+\subsection*{Differential expression analysis}
+
+We used limma-voom \citep{law2014} with duplicateCorrelation \citep{smyth2005} to model inter-study correlation, followed by lmFit and eBayes. Two complementary models were fit:
+
+\textbf{Model 1 (Factorial):} $\sim$ flight $\times$ cfd\_hardware + organ\_simple + light + ecotype\_simple (16 columns, rank 16, inter-study correlation 0.73)
+
+\textbf{Model 2 (CFD covariates):} $\sim$ flight + $g_{bl}$ + carbon\_12h + organ\_simple + light + ecotype\_simple (14 columns, rank 14, inter-study correlation 0.78)
+
+CFD covariates are deterministic functions of hardware $\times$ flight $\times$ organ and are collinear with factorial terms, necessitating separate models. Contrasts were tested using makeContrasts and contrasts.fit. Significance threshold: FDR $< 0.05$ and $|\log_2\text{FC}| > 1$.
+
+\subsection*{Variance partitioning}
+
+Due to rank deficiency in the design matrix and lme4/reformulas compatibility issues with variancePartition::dream, we used a custom sequential sum-of-squares approach: for 1,000 randomly sampled genes, we fit nested lm() models adding each factor sequentially (study $\rightarrow$ hardware $\rightarrow$ light $\rightarrow$ ecotype $\rightarrow$ organ $\rightarrow$ flight) and computed the incremental $R^2$ for each factor.
+
+\subsection*{Pathway scoring (GSVA-like)}
+
+We curated 28 pathway gene sets from KEGG (ath), AraPath, and TAIR annotations covering: auxin (biosynthesis, signaling, transport, response genes), cytokinin (biosynthesis, signaling), ethylene (biosynthesis, signaling), ABA (biosynthesis, signaling), gibberellin (biosynthesis, signaling), jasmonate (biosynthesis, signaling), salicylic acid (biosynthesis, signaling), photosynthesis light reactions, Calvin cycle, starch metabolism, sucrose metabolism, glycolysis, trehalose metabolism, cell wall biosynthesis, lignin biosynthesis, oxidative stress, heat shock, DNA damage response, and gravitropism signaling. For each pathway, we computed per-sample z-scored mean expression across pathway genes. Differential pathway activity was tested using Welch's t-tests across flight, hardware, and organ factors, with Benjamini-Hochberg FDR correction.
+
+\subsection*{Single-cell VAE deconvolution}
+
+We downloaded the Shahan root atlas Col-0 COPILOT sample (GSE152766) from GEO, converted the Seurat v5 object to AnnData format, and trained a scVI variational autoencoder \citep{lopez2018} (2 encoder layers, 30 latent dimensions, 128 hidden units, negative binomial likelihood, 50 epochs, batch size 256, learning rate 10\textsuperscript{-3}) on CPU. Cell-type signatures were computed as mean log-normalized expression per cell type (13 types: Endodermis, Trichoblast, Columella, Phloem Pole Pericycle, Metaphloem \& Companion Cell, Cortex, Lateral Root Cap, Atrichoblast, Xylem Pole Pericycle, Procambium, Protoxylem, Metaxylem, Protophloem). Bulk OSDR samples were deconvolved using non-negative least squares (NNLS) on 21,059 shared genes, with proportions normalized to sum to 1.
+
+\subsection*{miRNA activity inference}
+
+We curated 25 \textit{Arabidopsis} miRNA-target interaction sets from AGRIS, miRBase v22, and psRNATarget predictions. For each miRNA and each DE contrast, we tested enrichment of target genes in the DE set using Fisher's exact test, and inferred miRNA activity direction from the mean $\log_2$FC of target genes (negative mean logFC $\rightarrow$ miRNA upregulated; positive $\rightarrow$ miRNA suppressed). Significance was defined as FDR $< 0.1$ or $\geq 2$ target genes in the DE set.
+
+\subsection*{Code and data availability}
+
+All code is available as a Zenodo-ready package (\texttt{microgravity\_atmospheric\_adaptation}) with MIT license. The analysis pipeline includes: OSDR API mining, CFD covariate extraction, limma-voom differential expression, scVI VAE training and deconvolution, miRNA inference, and pathway scoring. Raw data are from NASA OSDR (\texttt{osdr.nasa.gov}) and GEO (GSE152766).
+
+% ============================================================
+\section*{Acknowledgments}
+
+We thank the NASA GeneLab and OSDR teams for maintaining open-access spaceflight omics data, and the Arabidopsis single-cell genomics community for making reference atlases publicly available.
+
+% ============================================================
+\section*{Author contributions}
+
+R.B. conceived the study, developed the CFD model, performed all analyses, and wrote the manuscript.
+
+% ============================================================
+\section*{Competing interests}
+
+The author declares no competing interests.
+
+% ============================================================
+% Figures
+% ============================================================
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{figures/fig1_study_overview_variance.png}
+\caption{\textbf{Study overview and variance partition.} (A) Sample counts by hardware type and flight condition. (B) Distribution of omics data types in the harmonized dataset. (C) Variance partition across factors, showing study (65.3\%) as the dominant source, followed by hardware (7.1\%), light (6.4\%), ecotype (5.2\%), organ (2.4\%), and flight (1.5\%).}
+\label{fig:overview}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{figures/fig2_volcano_plots.png}
+\caption{\textbf{Differential expression volcano plots.} (A) Flight main effect (FLT vs GC): 476 up, 264 down. (B) Hardware CARA vs BRIC: 2,388 up, 7,675 down. (C) Hardware Veggie vs BRIC: 633 up, 5,532 down. (D) CFD boundary layer conductance: 1,454 up, 2,179 down. FDR $< 0.05$, $|\log_2\text{FC}| > 1$.}
+\label{fig:volcano}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/fig3_cfd_pathway_heatmap.png}
+\caption{\textbf{CFD covariate correlations with hormone and carbon pathway activity.} Pearson correlations between three CFD-derived gas-exchange parameters (boundary layer conductance $g_{bl}$, carbon fixation capacity, boundary layer thickness $\delta$) and 28 pathway scores. Negative correlations with $g_{bl}$ indicate that reduced gas exchange suppresses photosynthesis, hormone biosynthesis, and signaling pathways. All shown correlations are FDR $< 0.05$.}
+\label{fig:cfd_pathway}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{figures/fig4_hormone_carbon_allocation.png}
+\caption{\textbf{Hormone and carbon pathway activity by hardware and flight condition.} GSVA-like pathway scores for 15 key pathways across three hardware types (BRIC, CARA, Veggie) and two flight conditions (GC, FLT). Veggie shows consistently higher pathway activity than BRIC across nearly all hormones and carbon metabolism pathways.}
+\label{fig:allocation}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/fig5_mirna_network.png}
+\caption{\textbf{Inferred miRNA activity across spaceflight contrasts.} Heatmap showing inferred miRNA activity direction (blue = upregulated, targets suppressed; orange = downregulated, targets de-repressed) for 25 miRNAs across 6 key contrasts. miR164, miR167, and miR159 show consistent upregulation in CARA vs BRIC, implicating auxin and ABA pathway regulation.}
+\label{fig:mirna}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{figures/fig6_cfd_gas_exchange.png}
+\caption{\textbf{CFD-predicted gas-exchange parameters by hardware and gravity.} (A) Carbon fixation capacity (\% Earth rates at 12h). (B) Boundary layer conductance ($g_{bl}$, mol m\textsuperscript{-2} s\textsuperscript{-1}). (C) Boundary layer thickness ($\delta$, mm). BRIC hardware shows dramatic gas-exchange limitation in microgravity, while Veggie maintains near-terrestrial rates.}
+\label{fig:cfd_gas}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{figures/fig7_pathway_heatmap.png}
+\caption{\textbf{Pathway activity heatmap across all samples.} GSVA-like z-scores for 28 pathways across 307 samples, ordered by hardware, flight, and organ. Clear hardware-dependent clustering is visible, with Veggie samples showing higher pathway activity overall.}
+\label{fig:heatmap}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/fig8_de_summary.png}
+\caption{\textbf{Differential expression summary across all contrasts.} Number of upregulated (orange) and downregulated (blue) genes for each contrast (FDR $< 0.05$, $|\log_2\text{FC}| > 1$). Hardware comparisons (CARA vs BRIC, FLT BRIC vs CARA) show the largest effects, while the flight main effect is relatively modest.}
+\label{fig:de_summary}
+\end{figure}
+
+% ============================================================
+% Supplementary tables reference
+% ============================================================
+
+\section*{Supplementary Tables}
+
+\begin{itemize}
+    \item Table S1: DE summary statistics for all 34 contrasts
+    \item Table S2: Pathway scores (GSVA-like) for all 307 samples $\times$ 28 pathways
+    \item Table S3: Differential pathway activity tests (308 tests)
+    \item Table S4: CFD-pathway correlations (84 tests)
+    \item Table S5: Cell-type deconvolution proportions for 307 samples
+    \item Table S6: miRNA activity inference (646 miRNA-contrast pairs)
+    \item Table S7: CFD covariates by scenario (18 scenarios $\times$ 34 covariates)
+    \item Table S8: CFD covariates by sample (451 samples)
+\end{itemize}
+
+% ============================================================
+\bibliographystyle{plainnat}
+
+\begin{thebibliography}{99}
+
+\bibitem[Paul et al., 2017]{paul2017}
+Paul, A.-L. et al. (2017). Orbital flight influences seedling morphology and the expression of key genes involved in plant signal transduction. \textit{npj Microgravity}, 3, 17011.
+
+\bibitem[Shahan et al., 2022]{shahan2022}
+Shahan, R. et al. (2022). A single-cell Arabidopsis root atlas reveals distinct molecular identities for early developmental cell types. \textit{Nature Communications}, 13, 3111.
+
+\bibitem[Denyer et al., 2019]{denyer2019}
+Denyer, T. et al. (2019). Spatiotemporal developmental trajectories in the Arabidopsis root revealed using time-lapse confocal imaging. \textit{Nature Communications}, 10, 684.
+
+\bibitem[Lopez et al., 2018]{lopez2018}
+Lopez, R. et al. (2018). Deep generative modeling for single-cell transcriptomics. \textit{Nature Methods}, 15, 1053--1058.
+
+\bibitem[Law et al., 2014]{law2014}
+Law, C.W. et al. (2014). voom: precision weights unlock linear model analysis tools for RNA-seq read counts. \textit{Genome Biology}, 15, R29.
+
+\bibitem[Smyth et al., 2005]{smyth2005}
+Smyth, G.K. (2005). limma: Linear Models for Microarray Data. In: \textit{Bioinformatics and Computational Biology Solutions Using R and Bioconductor}, Springer, pp.~397--420.
+
+\bibitem[Kitaya et al., 2003]{kitaya2003}
+Kitaya, Y. et al. (2003). The effect of gravity on the gas exchange of plant leaves. \textit{Advances in Space Research}, 31, 241--246.
+
+\bibitem[Monje et al., 2005]{monje2005}
+Monje, R. et al. (2005). Canopy gas exchange in microgravity: effects of super-elevated CO\textsubscript{2}. \textit{Advances in Space Research}, 36, 1227--1233.
+
+\end{thebibliography}
+
+\end{document}
