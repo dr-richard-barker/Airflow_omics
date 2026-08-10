@@ -1,0 +1,95 @@
+=== Multi-factorial Mixed-Effects Model Summary ===
+
+Method: limma-voom + duplicateCorrelation + lmFit + eBayes
+Random effect: study (osd_id) via duplicateCorrelation
+
+Model 1 (Factorial):
+  Formula: ~ flight * cfd_hardware + organ_simple + light + ecotype_simple
+  Inter-study correlation: 0.7324458 
+  Design: 16 cols, rank: 16 
+  Contrasts: 21 
+
+Model 2 (CFD Covariates):
+  Formula: ~ flight + g_bl + carbon_12h + organ_simple + light + ecotype_simple
+  Inter-study correlation: 0.7781553 
+  Design: 14 cols, rank: 14 
+  Contrasts: 13 
+
+Samples: 307 
+Genes tested: 25453 
+
+Note: CFD covariates (g_bl, carbon_12h, dC_CO2) are deterministic functions
+of hardware x flight x organ and are collinear with factorial terms.
+Model 1 tests hardware-specific effects; Model 2 tests CFD scalar predictors.
+
+=== DE Summary (FDR < 0.05, |logFC| > 1) ===
+                                                   contrast         model
+1                                          Flight_FLT_vs_GC     factorial
+2                                           HW_CARA_vs_BRIC     factorial
+3                                         HW_VEGGIE_vs_BRIC     factorial
+4                                  Flight_x_HW_CARA_vs_BRIC     factorial
+5                                Flight_x_HW_VEGGIE_vs_BRIC     factorial
+6                                     Flight_BRIC_FLT_vs_GC     factorial
+7                                    Organ_organ_simpleleaf     factorial
+8                                    Organ_organ_simpleroot     factorial
+9                                   Organ_organ_simpleshoot     factorial
+10          Organ_organ_simpleundifferentiated.cell.culture     factorial
+11                         Organ_organ_simplewhole_seedling     factorial
+12                                          Light_lightdark     factorial
+13                                     Light_lightred_light     factorial
+14                                   Light_lightunspecified     factorial
+15                                 Ecotype_ecotype_simpleWS     factorial
+16                              Ecotype_ecotype_simpleother     factorial
+17                                    Flight_CARA_FLT_vs_GC     factorial
+18                                  Flight_VEGGIE_FLT_vs_GC     factorial
+19                                       FLT_BRIC_vs_VEGGIE     factorial
+20                                         FLT_BRIC_vs_CARA     factorial
+21                                       FLT_CARA_vs_VEGGIE     factorial
+22                                CFDmodel_Flight_FLT_vs_GC cfd_covariate
+23                                                 CFD_g_bl cfd_covariate
+24                                           CFD_carbon_12h cfd_covariate
+25                          CFDmodel_Organ_organ_simpleleaf cfd_covariate
+26                          CFDmodel_Organ_organ_simpleroot cfd_covariate
+27                         CFDmodel_Organ_organ_simpleshoot cfd_covariate
+28 CFDmodel_Organ_organ_simpleundifferentiated cell culture cfd_covariate
+29                CFDmodel_Organ_organ_simplewhole_seedling cfd_covariate
+30                                 CFDmodel_Light_lightdark cfd_covariate
+31                            CFDmodel_Light_lightred_light cfd_covariate
+32                          CFDmodel_Light_lightunspecified cfd_covariate
+33                        CFDmodel_Ecotype_ecotype_simpleWS cfd_covariate
+34                     CFDmodel_Ecotype_ecotype_simpleother cfd_covariate
+   total_tested sig_up sig_down
+1         25453    476      264
+2         25453   2388     7675
+3         25453    633     5532
+4         25453   1020      857
+5         25453    846     1839
+6         25453    476      264
+7         25453    211       80
+8         25453      9        9
+9         25453      6        9
+10        25453    246      931
+11        25453    318      180
+12        25453   2041     1557
+13        25453   3265     2002
+14        25453    539     1653
+15        25453    911     1046
+16        25453   2353     1287
+17        25453    274      165
+18        25453    523     1185
+19        25453    923     5827
+20        25453   2411     7654
+21        25453   2447     1777
+22        25453    438      995
+23        25453   1454     2179
+24        25453      0        0
+25        25453    163       23
+26        25453     10       13
+27        25453      5       10
+28        25453    191      598
+29        25453    197       66
+30        25453   2325     1333
+31        25453   3882     1830
+32        25453    935     1785
+33        25453    532     1159
+34        25453   2318     1559

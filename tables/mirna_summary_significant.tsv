@@ -1,0 +1,41 @@
+contrast	mirna	inferred_activity	n_targets_DE	mean_target_logFC	fisher_fdr	mirna_family	spaceflight_relevance
+CFDmodel_Ecotype_ecotype_simpleWS	miR156	UNCHANGED	3	-0.1802959191011309	1.0	SPL (SQUAMOSA PROMOTER BINDING PROTEIN-LIKE)	SPLs regulate juvenile-to-adult transition; spaceflight may alter developmental timing
+CFDmodel_Ecotype_ecotype_simpleother	miR171	UP (targets suppressed)	2	-1.1502243662678708	1.0	SCL6/SCL22/SCL27 (GRAS domain)	Meristem function is altered in microgravity
+CFDmodel_Ecotype_ecotype_simpleother	miR408	UP (targets suppressed)	2	-2.343544564516705	1.0	Plantacyanin, laccase	Cell wall remodeling in microgravity
+CFDmodel_Light_lightdark	miR172	UP (targets suppressed)	2	-0.5438918237400179	1.0	AP2/TOE1/TOE2/SMZ	Flowering time is altered in spaceflight
+CFDmodel_Light_lightdark	miR408	UP (targets suppressed)	2	-1.21164932086828	1.0	Plantacyanin, laccase	Cell wall remodeling in microgravity
+CFDmodel_Light_lightred_light	miR156	UNCHANGED	2	-0.0011322674927326248	1.0	SPL (SQUAMOSA PROMOTER BINDING PROTEIN-LIKE)	SPLs regulate juvenile-to-adult transition; spaceflight may alter developmental timing
+Ecotype_ecotype_simpleWS	miR156	UNCHANGED	4	0.0017296747964844206	1.0	SPL (SQUAMOSA PROMOTER BINDING PROTEIN-LIKE)	SPLs regulate juvenile-to-adult transition; spaceflight may alter developmental timing
+Ecotype_ecotype_simpleWS	miR157	UNCHANGED	2	0.12847689685523364	1.0	SPL (SQUAMOSA PROMOTER BINDING PROTEIN-LIKE)	Same as miR156
+Ecotype_ecotype_simpleother	miR171	UP (targets suppressed)	2	-0.7393136623347002	1.0	SCL6/SCL22/SCL27 (GRAS domain)	Meristem function is altered in microgravity
+Ecotype_ecotype_simpleother	miR396	UNCHANGED	2	-0.020251850875931794	1.0	GRF1-7 (GROWTH REGULATING FACTOR)	GRFs regulate organ growth; spaceflight alters growth patterns
+Ecotype_ecotype_simpleother	miR408	UP (targets suppressed)	2	-1.913668181093775	1.0	Plantacyanin, laccase	Cell wall remodeling in microgravity
+FLT_BRIC_vs_CARA	miR156	UP (targets suppressed)	3	-3.986581568596578	1.0	SPL (SQUAMOSA PROMOTER BINDING PROTEIN-LIKE)	SPLs regulate juvenile-to-adult transition; spaceflight may alter developmental timing
+FLT_BRIC_vs_CARA	miR157	UP (targets suppressed)	2	-3.9704234337389748	1.0	SPL (SQUAMOSA PROMOTER BINDING PROTEIN-LIKE)	Same as miR156
+FLT_BRIC_vs_CARA	miR159	UP (targets suppressed)	2	-3.314295675596272	1.0	MYB33/MYB65/GAMYB	ABA signaling is altered in microgravity; miR159 is a key ABA-responsive miRNA
+FLT_BRIC_vs_CARA	miR164	UP (targets suppressed)	2	-4.285750816918287	1.0	NAC1/CUC1/CUC2	Lateral root development is altered in microgravity; NAC1 mediates auxin signaling in roots
+FLT_BRIC_vs_CARA	miR167	UP (targets suppressed)	2	-3.8455004732877067	1.0	ARF6/ARF8	ARF6/8 regulate lateral root initiation; auxin redistribution in microgravity affects root architecture
+FLT_BRIC_vs_CARA	miR172	UP (targets suppressed)	2	-0.831791058269595	1.0	AP2/TOE1/TOE2/SMZ	Flowering time is altered in spaceflight
+FLT_BRIC_vs_CARA	miR319	UP (targets suppressed)	2	-3.7407952921456253	1.0	TCP2/TCP3/TCP4/TCP10	TCPs regulate leaf morphology; spaceflight affects leaf development
+FLT_BRIC_vs_CARA	miR393	UP (targets suppressed)	3	-1.432343448340165	1.0	TIR1/AFB2/AFB3 (auxin receptors)	TIR1 is the auxin receptor; miR393-mediated downregulation would alter auxin sensitivity in microgravity
+FLT_BRIC_vs_VEGGIE	miR171	UNCHANGED	2	0.2599764379850218	1.0	SCL6/SCL22/SCL27 (GRAS domain)	Meristem function is altered in microgravity
+FLT_BRIC_vs_VEGGIE	miR172	DOWN (targets de-repressed)	2	1.2530525883186532	1.0	AP2/TOE1/TOE2/SMZ	Flowering time is altered in spaceflight
+FLT_CARA_vs_VEGGIE	miR164	DOWN (targets de-repressed)	2	3.4039416507062357	1.0	NAC1/CUC1/CUC2	Lateral root development is altered in microgravity; NAC1 mediates auxin signaling in roots
+FLT_CARA_vs_VEGGIE	miR167	DOWN (targets de-repressed)	2	2.8276487303406768	1.0	ARF6/ARF8	ARF6/8 regulate lateral root initiation; auxin redistribution in microgravity affects root architecture
+Flight_VEGGIE_FLT_vs_GC	miR397	UP (targets suppressed)	2	-0.9840569671420721	1.0	LAC2/LAC4/LAC17 (laccases)	Cell wall remodeling occurs in microgravity; lignin deposition is altered
+Flight_VEGGIE_FLT_vs_GC	miR408	UNCHANGED	2	0.14335661228229502	1.0	Plantacyanin, laccase	Cell wall remodeling in microgravity
+HW_CARA_vs_BRIC	miR156	UP (targets suppressed)	3	-3.831174677447876	1.0	SPL (SQUAMOSA PROMOTER BINDING PROTEIN-LIKE)	SPLs regulate juvenile-to-adult transition; spaceflight may alter developmental timing
+HW_CARA_vs_BRIC	miR157	UP (targets suppressed)	2	-3.656713600341297	1.0	SPL (SQUAMOSA PROMOTER BINDING PROTEIN-LIKE)	Same as miR156
+HW_CARA_vs_BRIC	miR159	UP (targets suppressed)	3	-3.26922101783373	1.0	MYB33/MYB65/GAMYB	ABA signaling is altered in microgravity; miR159 is a key ABA-responsive miRNA
+HW_CARA_vs_BRIC	miR160	UP (targets suppressed)	2	-1.6426553118952034	1.0	ARF10/ARF16/ARF17	Auxin redistribution is central to gravitropic response; ARF10/16/17 regulate root gravitropism
+HW_CARA_vs_BRIC	miR164	UP (targets suppressed)	3	-4.655692932024538	1.0	NAC1/CUC1/CUC2	Lateral root development is altered in microgravity; NAC1 mediates auxin signaling in roots
+HW_CARA_vs_BRIC	miR167	UP (targets suppressed)	2	-3.5092985184740564	1.0	ARF6/ARF8	ARF6/8 regulate lateral root initiation; auxin redistribution in microgravity affects root architecture
+HW_CARA_vs_BRIC	miR171	DOWN (targets de-repressed)	2	0.563465558030305	1.0	SCL6/SCL22/SCL27 (GRAS domain)	Meristem function is altered in microgravity
+HW_CARA_vs_BRIC	miR172	UP (targets suppressed)	2	-0.8960521144697328	1.0	AP2/TOE1/TOE2/SMZ	Flowering time is altered in spaceflight
+HW_CARA_vs_BRIC	miR393	UP (targets suppressed)	3	-1.5091740699070888	1.0	TIR1/AFB2/AFB3 (auxin receptors)	TIR1 is the auxin receptor; miR393-mediated downregulation would alter auxin sensitivity in microgravity
+HW_VEGGIE_vs_BRIC	miR171	UNCHANGED	2	0.164283549841364	1.0	SCL6/SCL22/SCL27 (GRAS domain)	Meristem function is altered in microgravity
+HW_VEGGIE_vs_BRIC	miR172	DOWN (targets de-repressed)	2	1.1656370403704142	1.0	AP2/TOE1/TOE2/SMZ	Flowering time is altered in spaceflight
+Light_lightdark	miR156	DOWN (targets de-repressed)	2	0.42515487507195926	1.0	SPL (SQUAMOSA PROMOTER BINDING PROTEIN-LIKE)	SPLs regulate juvenile-to-adult transition; spaceflight may alter developmental timing
+Light_lightdark	miR172	UP (targets suppressed)	2	-0.6972359900708309	1.0	AP2/TOE1/TOE2/SMZ	Flowering time is altered in spaceflight
+Light_lightdark	miR408	UP (targets suppressed)	2	-1.33972884630666	1.0	Plantacyanin, laccase	Cell wall remodeling in microgravity
+Light_lightred_light	miR408	UP (targets suppressed)	2	-2.710998582963975	1.0	Plantacyanin, laccase	Cell wall remodeling in microgravity
