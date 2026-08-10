@@ -19,31 +19,38 @@ This repository mines the NASA Open Science Data Repository (OSDR) for *Arabidop
 ## Structure
 
 ```
-microgravity_atmospheric_adaptation/
-├── osdr_miner/           # OSDR API mining + harmonization scripts
-│   ├── mine_osdr.py
-│   ├── enrich_metadata.py
-│   ├── finalize_metadata.py
-│   ├── download_data.py
-│   └── build_harmonized_matrix.py
-├── factorial_model/      # limma-voom mixed-effects model
-│   └── fit_factorial_model.R
-├── cfd_covariates/       # CFD covariate extraction from LunarLeaf-CFD
-│   └── extract_cfd.py
-├── sc_vae_deconv/        # scVI VAE training + NNLS deconvolution
-│   ├── train_vae_deconvolve.py
-│   └── run_vae_deconv.py
-├── mirna_inference/      # miRNA target inference from mRNA DE
-│   └── infer_mirna_targets.py
-├── systems_biology/      # Hormone/carbon pathway scoring (GSVA-like)
-│   └── hormone_carbon_model.py
-├── figures/              # Figure generation script
-│   └── generate_figures.py
-├── data/                 # Processed/harmonized data (not in repo - download via OSDR)
-├── .zenodo.json          # Zenodo metadata
-├── CITATION.cff          # Citation information
-├── LICENSE               # MIT license
-└── README.md
+Airflow_omics/
+├── code/
+│   ├── osdr_miner/           # OSDR API mining + harmonization scripts
+│   │   ├── mine_osdr.py
+│   │   ├── enrich_metadata.py
+│   │   ├── finalize_metadata.py
+│   │   ├── download_data.py
+│   │   └── build_harmonized_matrix.py
+│   ├── factorial_model/      # limma-voom mixed-effects model
+│   │   └── fit_factorial_model.R
+│   ├── cfd_covariates/       # CFD covariate extraction from LunarLeaf-CFD
+│   │   └── extract_cfd.py
+│   ├── sc_vae_deconv/        # scVI VAE training + NNLS deconvolution
+│   │   ├── train_vae_deconvolve.py
+│   │   └── run_vae_deconv.py
+│   ├── mirna_inference/      # miRNA target inference from mRNA DE
+│   │   └── infer_mirna_targets.py
+│   └── systems_biology/      # Hormone/carbon pathway scoring (GSVA-like)
+│       └── hormone_carbon_model.py
+├── figures/                  # SVG and PNG figures + generation script
+│   ├── generate_figures.py   # Figure generation script
+│   └── fig1_study_overview_variance.png (etc.)
+├── manuscript/               # LaTeX manuscript sources + compiled PDF
+│   ├── manuscript.tex
+│   └── manuscript.pdf
+├── docs/                     # GitHub Pages landing page
+│   ├── index.html
+│   └── assets/
+├── CITATION.cff              # Citation info
+├── LICENSE                   # MIT license
+├── PLAN.md                   # Project design and objectives
+└── README.md                 # This overview
 ```
 
 ## Requirements
@@ -54,12 +61,12 @@ microgravity_atmospheric_adaptation/
 
 ## Usage
 
-1. `osdr_miner/mine_osdr.py` — Mine OSDR API and build harmonized metadata
-2. `cfd_covariates/extract_cfd.py` — Extract CFD gas-exchange covariates from LunarLeaf-CFD
-3. `factorial_model/fit_factorial_model.R` — Fit limma-voom mixed-effects model (2 models, 34 contrasts)
-4. `sc_vae_deconv/run_vae_deconv.py` — Train scVI VAE and deconvolve bulk samples
-5. `mirna_inference/infer_mirna_targets.py` — Infer miRNA activity from mRNA DE results
-6. `systems_biology/hormone_carbon_model.py` — Score 28 hormone/carbon pathways, test differential activity
+1. `code/osdr_miner/mine_osdr.py` — Mine OSDR API and build harmonized metadata
+2. `code/cfd_covariates/extract_cfd.py` — Extract CFD gas-exchange covariates from LunarLeaf-CFD
+3. `code/factorial_model/fit_factorial_model.R` — Fit limma-voom mixed-effects model (2 models, 34 contrasts)
+4. `code/sc_vae_deconv/run_vae_deconv.py` — Train scVI VAE and deconvolve bulk samples
+5. `code/mirna_inference/infer_mirna_targets.py` — Infer miRNA activity from mRNA DE results
+6. `code/systems_biology/hormone_carbon_model.py` — Score 28 hormone/carbon pathways, test differential activity
 7. `figures/generate_figures.py` — Generate all 8 main figures (SVG + PNG)
 8. `manuscript/manuscript.tex` — Compile with pdflatex
 
