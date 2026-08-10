@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Atmospheric boundary-layer physics drives tissue-specific hormonal and carbon allocation responses in Arabidopsis grown in microgravity"
+type: software
+authors:
+  - family-names: Barker
+    given-names: Richard
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: AstroBotany / AIRI
+keywords:
+  - Arabidopsis thaliana
+  - spaceflight
+  - microgravity
+  - boundary layer
+  - gas exchange
+  - CFD
+  - multiomics
+  - single-cell RNA-seq
+  - hormone signaling
+  - carbon allocation
+  - NASA OSDR
+  - GeneLab
+license: MIT
+repository-code: "https://github.com/dr-richard-barker/microgravity-atmospheric-adaptation"
+version: "1.0.0"
+date-released: "2026-08-05"
+preferred-citation:
+  type: article
+  title: "Atmospheric boundary-layer physics drives tissue-specific hormonal and carbon allocation responses in Arabidopsis grown in microgravity"
+  authors:
+    - family-names: Barker
+      given-names: Richard
+  journal: "npj Microgravity"
+  year: 2026
