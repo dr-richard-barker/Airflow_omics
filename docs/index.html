@@ -1,76 +1,110 @@
 <!doctype html>
-<html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Home · Airflow Omics Model</title>
-<meta name="description" content="Computational fluid dynamics-guided multi-omics meta-analysis of Arabidopsis spaceflight adaptation and gas exchange. FAIR data and code.">
-<link rel="stylesheet" href="assets/style.css">
-<link rel="stylesheet" href="https://dr-richard-barker.github.io/Plant_response_to_radiation/cose/cose-theme.css">
-</head><body data-site-id="Airflow_omics">
-<header class="site"><nav>
-  <span class="brand">🌬️ Airflow Omics Model</span>
-  <a href="#abstract" style="color:var(--accent)">Abstract</a>
-  <a href="#highlights">Highlights</a>
-  <a href="#figures">Figures</a>
-  <a href="#data">Data &amp; code</a>
-  <a href="https://github.com/dr-richard-barker/Airflow_omics">GitHub ↗</a>
-</nav></header>
-<main>
-<section class="hero">
-  <h1>CFD-guided multi-omics meta-analysis of Arabidopsis spaceflight adaptation</h1>
-  <p class="lede">Integrating RNA-seq and microarray data from 451 spaceflight samples with CFD gas-exchange boundary layer modeling, single-cell VAE deconvolution, and systems biology models of hormone and carbon allocation.</p>
-  <div class="badges">
-    <span class="badge">CC-BY-4.0</span><span class="badge">FAIR Data</span>
-    <span class="badge">R &amp; Python</span><span class="badge">NASA OSDR</span>
-    <span class="badge">Lattice-Boltzmann CFD</span><span class="badge">scVI VAE Deconvolution</span>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Airflow Omics Model · NASA OSDR</title>
+<meta name="description" content="Computational fluid dynamics-guided multi-omics meta-analysis of Arabidopsis spaceflight adaptation and gas exchange.">
+<link rel="icon" href="https://dr-richard-barker.github.io/Plant_response_to_radiation/cose/cose-logo.png">
+<link rel="stylesheet" href="https://dr-richard-barker.github.io/Plant_response_to_radiation/cose/theme.css">
+<style>
+  /* Light blue accent overrides */
+  :root{ --accent:#3fa9b5; --accent2:#5ac5d2; }
+  @media (prefers-color-scheme: dark){ :root{ --accent:#53c3cf; --accent2:#71d9e5; } }
+  header{background:linear-gradient(180deg,rgba(83,195,207,.10),transparent)}
+</style>
+</head>
+<body data-site-id="Airflow_omics">
+<header>
+  <div class="wrap">
+    <p class="eyebrow">Airflow Omics Model · NASA OSDR &amp; CFD</p>
+    <h1>Computational Fluid Dynamics-Guided Multi-Omics Meta-Analysis of Arabidopsis Spaceflight Adaptation</h1>
+    <p class="lede">Integrating RNA-seq and microarray data from 451 spaceflight samples with CFD gas-exchange boundary layer modeling, single-cell VAE deconvolution, and systems biology models of hormone and carbon allocation.</p>
+    <p class="meta">Richard Barker · Arabidopsis thaliana · 451 samples · 16 NASA OSDR studies</p>
+    <div class="btns">
+      <a class="btn primary" href="https://github.com/dr-richard-barker/Airflow_omics/blob/main/manuscript/manuscript.pdf">Read the manuscript</a>
+      <a class="btn" href="https://github.com/dr-richard-barker/Airflow_omics/tree/main/code">Source Code</a>
+      <a class="btn" href="https://github.com/dr-richard-barker/Airflow_omics">Code &amp; data (GitHub)</a>
+    </div>
   </div>
-  <div class="btnrow">
-    <a class="btn primary" href="https://github.com/dr-richard-barker/Airflow_omics/blob/main/manuscript/manuscript.pdf">Read the manuscript (PDF) →</a>
-    <a class="btn" href="#figures">Figures</a>
-    <a class="btn" href="https://github.com/dr-richard-barker/Airflow_omics/tree/main/code">Pipeline code</a>
-    <a class="btn" href="https://github.com/dr-richard-barker/Airflow_omics">Code &amp; data (GitHub)</a>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>Overview</h2>
+    <p class="sub">Atmospheric microenvironment, not microgravity alone, drives plant spaceflight responses.</p>
+    <p>Using a limma-voom mixed-effects model and lattice-Boltzmann CFD simulations of leaf-level gas exchange, we show that growth hardware dominates transcriptomic variation. Sealed BRIC canisters restrict gas exchange and limit photosynthesis to ~1% of Earth rates, inducing a severe boundary-layer penalty that correlates with suppression of auxin, jasmonate, and ABA pathways.</p>
+    <div class="cards" style="margin-top:22px">
+      <div class="card"><div class="stat">451</div>   <h3>Spaceflight Samples</h3>
+        <p>Harmonized expression profiles across Col-0 and WS ecotypes in 16 OSDR studies.</p></div>
+      <div class="card"><div class="stat">~1%</div>  <h3>Photosynthesis Rate</h3>
+        <p>Carbon fixation rate in sealed BRIC canisters compared to ~100% in vented Veggie hardware.</p></div>
+      <div class="card"><div class="stat">scVI VAE</div><h3>Deconvolution</h3>
+        <p>Variational autoencoder trained on Shahan atlas to resolve tissue composition changes.</p></div>
+    </div>
   </div>
-  <p class="lede"><b>Headline:</b> Growth hardware, not microgravity itself, dominates spaceflight transcriptomic responses. Sealed BRIC canisters restrict boundary-layer gas exchange, limiting photosynthesis to ~1% of Earth rates and suppressing growth-regulating hormone pathways.</p>
 </section>
 
-<h2 id="abstract">Abstract</h2>
-<div class="content"><p>Spaceflight imposes unique mechanical and atmospheric stresses on plants, but disentangling the effects of microgravity from those of growth hardware has remained a challenge. We present a multi-omics meta-analysis of 451 <em>Arabidopsis thaliana</em> spaceflight samples (Col-0 and WS ecotypes) across 16 NASA OSDR studies, integrating RNA-seq and microarray data with computational fluid dynamics (CFD) gas-exchange modeling and single-cell RNA-seq deconvolution. Using a limma-voom mixed-effects model with study as a random effect (n = 307 expression-profiled samples, 25,453 genes), we identify hardware as the dominant source of transcriptional variation after study: CARA and Veggie hardware show 7,675 and 5,532 downregulated genes respectively versus BRIC, dwarfing the 476 up / 264 down genes altered by flight itself. CFD modeling reveals that sealed BRIC hardware limits carbon fixation to ~1% of Earth rates in microgravity, versus ~90% for semi-permeable CARA and ~100% for vented Veggie. Boundary layer conductance (g_bl) negatively correlates with photosynthesis (r = -0.467), Calvin cycle (r = -0.422), auxin signaling (r = -0.372), ABA (r = -0.352), and jasmonate (r = -0.358) pathway activity (all FDR < 10⁻⁹). A scVI variational autoencoder trained on the Shahan root atlas (6,433 cells, 13 cell types) deconvolves bulk samples, revealing tissue composition shifts across hardware. Inferred miRNA activity from mRNA targets implicates miR164, miR167, and miR159 in hardware-dependent auxin and ABA pathway modulation. These findings demonstrate that atmospheric microenvironment—not microgravity alone—is the primary driver of plant transcriptomic adaptation in current spaceflight hardware, and provide a computational framework for designing improved plant growth systems for long-duration space missions.</p><hr /></div>
+<section>
+  <div class="wrap">
+    <h2><span class="n">01</span>Variance Components</h2>
+    <p class="sub">Growth hardware is the dominant source of transcriptomic variation after study.</p>
+    <figure>
+      <img src="figures/fig1_study_overview_variance.png" alt="Study overview and variance components partition">
+      <figcaption>Variance partition showing that hardware differences dwarf the effect size of spaceflight itself.</figcaption>
+    </figure>
+  </div>
+</section>
 
-<h2 id="highlights">Highlights</h2>
-<div class="cards">
-  <div class="card"><h3>Hardware Dominance</h3>
-    <p>CARA &amp; Veggie show thousands of downregulated genes vs BRIC, dwarfing the flight effect size.</p></div>
-  <div class="card"><h3>CFD Boundary Layers</h3>
-    <p>Sealed BRIC canisters suppress boundary layer gas-exchange conductance, reducing photosynthesis to ~1%.</p></div>
-  <div class="card"><h3>Hormonal Down-Regulation</h3>
-    <p>Boundary-layer stagnation correlates directly with suppression of auxin, jasmonate, and ABA signaling.</p></div>
-  <div class="card"><h3>scVI VAE Deconvolution</h3>
-    <p>Variational autoencoder deconvolves 307 bulk samples to reveal tissue-specific composition shifts.</p></div>
-</div>
+<section>
+  <div class="wrap">
+    <h2><span class="n">02</span>Boundary-Layer Conductance</h2>
+    <p class="sub">CFD-derived gas-exchange rates correlate directly with pathway activation.</p>
+    <figure>
+      <img src="figures/fig3_cfd_pathway_heatmap.png" alt="Heatmap of pathway activity vs boundary layer conductance">
+      <figcaption>Correlations between boundary layer conductance ($g_{bl}$) and photosynthesis, Calvin cycle, and hormone signaling pathways.</figcaption>
+    </figure>
+  </div>
+</section>
 
-<h2 id="figures">Selected figures</h2>
-<div class="gallery">
-  <figure><a href="https://github.com/dr-richard-barker/Airflow_omics/tree/main/figures"><img src="assets/figures/fig1_study_overview_variance.png" alt="Study overview and variance components partition."></a><figcaption>Figure 1 — Variance components analysis showing study and hardware as dominant drivers of transcription.</figcaption></figure>
-  <figure><a href="https://github.com/dr-richard-barker/Airflow_omics/tree/main/figures"><img src="assets/figures/fig3_cfd_pathway_heatmap.png" alt="Heatmap of pathway activity vs boundary layer conductance."></a><figcaption>Figure 3 — Pathway activity correlation with boundary layer gas-exchange parameters.</figcaption></figure>
-  <figure><a href="https://github.com/dr-richard-barker/Airflow_omics/tree/main/figures"><img src="assets/figures/fig4_hormone_carbon_allocation.png" alt="Hormone and carbon allocation models."></a><figcaption>Figure 4 — Hormonal and metabolic pathway responses under flight and ground controls.</figcaption></figure>
-  <figure><a href="https://github.com/dr-richard-barker/Airflow_omics/tree/main/figures"><img src="assets/figures/fig6_cfd_gas_exchange.png" alt="CFD gas exchange modeling across scales."></a><figcaption>Figure 6 — Lattice-Boltzmann CFD simulations of leaf-level and rosette-level carbon and water exchange.</figcaption></figure>
-</div>
+<section>
+  <div class="wrap">
+    <h2><span class="n">03</span>Hormone &amp; Carbon Allocation</h2>
+    <p class="sub">Reconstructing auxin, jasmonate, and metabolic adaptation models under flight containment.</p>
+    <figure>
+      <img src="figures/fig4_hormone_carbon_allocation.png" alt="Hormone and carbon allocation models">
+      <figcaption>Systems biology models mapping hormone biosynthesis and carbon allocation shifts across hardware types.</figcaption>
+    </figure>
+    <figure style="margin-top:22px">
+      <img src="figures/fig6_cfd_gas_exchange.png" alt="CFD gas exchange modeling across scales">
+      <figcaption>Lattice-Boltzmann CFD rosette-level and canopy-level simulations of boundary layer CO2 transport.</figcaption>
+    </figure>
+  </div>
+</section>
 
-<h2 id="data">Data &amp; code</h2>
-<div class="content"><ul>
-  <li><b>Manuscript:</b> <a href="https://github.com/dr-richard-barker/Airflow_omics/blob/main/manuscript/manuscript.pdf">Compiled PDF Manuscript</a>
-      · LaTeX source in <a href="https://github.com/dr-richard-barker/Airflow_omics/tree/main/manuscript"><code>manuscript/</code></a></li>
-  <li><b>Result tables:</b> <a href="https://github.com/dr-richard-barker/Airflow_omics/tree/main/tables"><code>tables/</code></a> (Differential expression results, deconvolution estimates, pathway scoring)</li>
-  <li><b>Figures:</b> <a href="https://github.com/dr-richard-barker/Airflow_omics/tree/main/figures"><code>figures/</code></a> (All SVG + PNG main paper figures)</li>
-  <li><b>Source Code:</b> <a href="https://github.com/dr-richard-barker/Airflow_omics/tree/main/code"><code>code/</code></a> (OSDR data mining, limma modeling, scVI deconvolution, and pathway analysis)</li>
-</ul>
-<p class="note">Independent research. Not affiliated with or endorsed by NASA or JAXA.
-Reference data (NASA OSDR, GSE152766) remain subject to their own terms; cite the original accessions.</p></div>
-</main>
-<footer class="site">
-  Airflow Omics Model — CFD-guided plant spaceflight meta-analysis ·
-  FAIR data &amp; code ·
-  <a href="https://github.com/dr-richard-barker/Airflow_omics">GitHub</a>
+<section>
+  <div class="wrap">
+    <h2>Data &amp; code</h2>
+    <p class="sub">Reproducible, FAIR-aligned pipeline code and results.</p>
+    <table>
+      <tr><th>Component</th><th>Location</th></tr>
+      <tr><td>LaTeX Manuscript</td><td><a href="https://github.com/dr-richard-barker/Airflow_omics/blob/main/manuscript/manuscript.pdf"><code>manuscript.pdf</code></a></td></tr>
+      <tr><td>Data Mining &amp; Harmonization</td><td><a href="https://github.com/dr-richard-barker/Airflow_omics/tree/main/code/osdr_miner"><code>code/osdr_miner/</code></a></td></tr>
+      <tr><td>Factorial &amp; VAE modeling</td><td><a href="https://github.com/dr-richard-barker/Airflow_omics/tree/main/code"><code>code/</code></a> (limma model, scVI deconvolution, miRNA)</td></tr>
+      <tr><td>Spreadsheets</td><td><a href="https://github.com/dr-richard-barker/Airflow_omics/tree/main/tables"><code>tables/</code></a> (expression, deconvolution, pathway scores)</td></tr>
+      <tr><td>Figures</td><td><a href="https://github.com/dr-richard-barker/Airflow_omics/tree/main/figures"><code>figures/</code></a> (all PNG/SVG output plots and script)</td></tr>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Airflow Omics Model · part of the <a href="https://cosecloud.com/">COSE</a> project family<br>
+    Data: NASA OSDR (<a href="https://osdr.nasa.gov">osdr.nasa.gov</a>) and LunarLeaf-CFD.</p>
+  </div>
 </footer>
+
 <script src="https://dr-richard-barker.github.io/Plant_response_to_radiation/cose/sites.js"></script>
 <script src="https://dr-richard-barker.github.io/Plant_response_to_radiation/cose/theme.js"></script>
-</body></html>
+</body>
+</html>
