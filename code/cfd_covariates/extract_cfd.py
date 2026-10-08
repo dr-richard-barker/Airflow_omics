@@ -36,7 +36,9 @@ import numpy as np
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
-CFD_TAB = "/workspace/LunarLeaf-CFD/results/tables"
+# LUNARLEAF_TABLES overrides the original Biomni workspace path, e.g.
+#   LUNARLEAF_TABLES=~/Documents/LunarLeaf-CFD/results/tables
+CFD_TAB = os.path.expanduser(os.environ.get("LUNARLEAF_TABLES", "/workspace/LunarLeaf-CFD/results/tables"))
 DATA = "/mnt/shared-workspace/microgravity_atmospheric_adaptation/data"
 OUT = "/mnt/shared-workspace/microgravity_atmospheric_adaptation/cfd_covariates"
 os.makedirs(OUT, exist_ok=True)
@@ -45,13 +47,36 @@ os.makedirs(OUT, exist_ok=True)
 # 1. Load all CFD tables
 # ---------------------------------------------------------------------------
 t2  = pd.read_csv(f"{CFD_TAB}/T2_model_sweep.csv")          # gravity sweep: dC_H2O/CO2/O2 mean & peak
-t6  = pd.read_csv(f"{CFD_TAB}/T6_forced_airflow.csv")        # forced airflow: fan speed vs dC
+t6  = pd.read_csv(f"{CFD_TAB}/T6_forced_airflow.csv", comment="#")  # forced airflow: fan speed vs dC
 t8  = pd.read_csv(f"{CFD_TAB}/T8_enclosure_timescales.csv")  # BRIC enclosure timescales
-t9  = pd.read_csv(f"{CFD_TAB}/T9_fan_by_scale.csv")          # fan by scale
+t9  = pd.read_csv(f"{CFD_TAB}/T9_fan_by_scale.csv", comment="#")  # fan by scale
 t10 = pd.read_csv(f"{CFD_TAB}/T10_hardware_by_scale.csv")    # hardware x scale: surf dC
 t11 = pd.read_csv(f"{CFD_TAB}/T11_photosynthesis_feedback.csv")  # 12h carbon % Earth
 t12 = pd.read_csv(f"{CFD_TAB}/T12_feedback_spatial.csv")     # net assimilation % by scenario
 t13 = pd.read_csv(f"{CFD_TAB}/T13_boundary_layer.csv")       # g_bl, delta, Sherwood by gravity
+# T19 (LunarLeaf-CFD, 2026-10-08): the leaf inside the real BRIC (60 mm round) and CARA
+# (120 mm square) dish cross-sections. Optional, so older table sets still run.
+_t19_path = f"{CFD_TAB}/T19_dish_hardware.csv"
+t19 = pd.read_csv(_t19_path) if os.path.exists(_t19_path) else None
+
+# Earth-equivalent fan speed per scale, read from T9's summary line, e.g.
+#   "# Earth-equivalent fan speed (cm/s): leaf=2.0  rosette=6.5  canopy=NaN"
+# (LunarLeaf-CFD regenerated 2026-10-07: pressure outlet + steady-state runs; the
+# earlier tables gave 2.8 / 11.0 from a decaying-outlet, unconverged sweep.)
+# NaN = Earth level not reached within the solver's valid (Ma <= 0.3) range.
+def _t9_crossings(path):
+    with open(path) as fh:
+        for line in fh:
+            if line.startswith("# Earth-equivalent fan speed"):
+                pairs = line.split(":", 1)[1].split()
+                return {k: float(v) for k, v in (p.split("=") for p in pairs)}
+    raise ValueError(f"no Earth-equivalent line in {path}")
+
+FAN_EQUIV_CM_S = _t9_crossings(f"{CFD_TAB}/T9_fan_by_scale.csv")
+# Fan speed of LunarLeaf's VEGGIE scenes (hw-veggie, scales.ts VEGGIE rows): forcedU
+# 0.05 lattice x 166 cm/s per lattice unit (T3). This was previously set to 2.8, which
+# was the Earth-equivalent speed, not the speed the VEGGIE scenes model.
+VEGGIE_FAN_CM_S = 0.05 * 166
 
 # ---------------------------------------------------------------------------
 # 2. Build per-scenario covariate table
@@ -122,6 +147,30 @@ for hw in HW_CFD:
                 row["sherwood"] = np.nan
                 row["dC_CO2_mean_bl"] = np.nan
                 row["o2_excess_ppm_bl"] = np.nan
+
+            # --- In-dish boundary layer (T19), BRIC/CARA leaf only ---
+            # Kept as SEPARATE columns: T19 covers only the leaf in the BRIC and CARA dishes
+            # (rosettes do not fit under the lid; VEGGIE is not a dish in the model), so
+            # overwriting g_bl would mix two geometries and reverse the leaf/rosette order.
+            # g_bl_dish is the conductance from the leaf to the dish's own air (the meaningful
+            # value in a sealed dish), from the mid-range dish with its flight boundary
+            # (BRIC sealed, CARA taped). BRIC at 1 g is indicative only (not steady,
+            # beyond the Boussinesq limit).
+            row["g_bl_dish_mol_m2_s"] = np.nan
+            row["g_bl_dish_vs_ambient"] = np.nan
+            row["dish_headspace_mm"] = np.nan
+            row["g_bl_dish_note"] = ""
+            if t19 is not None and scale == "leaf" and hw in ("BRIC", "CARA"):
+                bc = {"BRIC": "sealed", "CARA": "taped"}[hw]
+                job = f"{hw}-mid_{bc}_g{1 if gkey == 'earth' else 0}"
+                d = t19[t19["job"] == job]
+                if len(d) > 0:
+                    d = d.iloc[0]
+                    row["g_bl_dish_mol_m2_s"] = d["g_bl_vs_enclosure_bulk"]
+                    row["g_bl_dish_vs_ambient"] = d["g_bl_vs_ambient"]
+                    row["dish_headspace_mm"] = d["headspace_mm"]
+                    row["g_bl_dish_note"] = ("indicative: sealed 1 g not steady, beyond Boussinesq limit"
+                                             if (hw == "BRIC" and gkey == "earth") else "steady")
 
             # --- Full gas-exchange sweep (T2) ---
             ge = t2_clean[(t2_clean["scale"] == scale) & (t2_clean["gravity_key"] == gkey)]
@@ -224,14 +273,13 @@ for hw in HW_CFD:
                 row["co2_stress_hr"] = np.nan
                 row["o2_hypoxia_days"] = np.nan
 
-            # --- Forced airflow equivalent (T6/T9) ---
+            # --- Forced airflow equivalent (T9) ---
             # Earth-equivalent fan speed that nulls the microgravity penalty
-            fan_equiv = {"leaf": 2.8, "rosette": 11.0, "canopy": np.nan}  # cm/s
-            row["earth_equiv_fan_cm_s"] = fan_equiv.get(scale, np.nan)
-            # VEGGIE has forced airflow (~2.8 cm/s or more)
+            row["earth_equiv_fan_cm_s"] = FAN_EQUIV_CM_S.get(scale, np.nan)
+            # VEGGIE has forced airflow at the speed its CFD scenes model
             if hw == "VEGGIE" and gkey == "ug":
                 row["has_forced_airflow"] = 1
-                row["fan_cm_s"] = 2.8  # approximate VEGGIE fan speed
+                row["fan_cm_s"] = VEGGIE_FAN_CM_S
             else:
                 row["has_forced_airflow"] = 0
                 row["fan_cm_s"] = 0.0

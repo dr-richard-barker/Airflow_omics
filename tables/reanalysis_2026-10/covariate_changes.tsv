@@ -1,0 +1,17 @@
+column	n_mismatch
+dC_CO2_peak	307
+earth_equiv_fan_cm_s	307
+dC_H2O_peak	239
+dC_O2_peak	239
+g_bl_mol_m2_s	221
+sherwood	221
+delta_mm	153
+dC_CO2_mean_bl	153
+o2_excess_ppm_bl	153
+dC_H2O_mean	153
+dC_CO2_mean	153
+dC_O2_mean	153
+u_max	86
+surf_dC_H2O_hw	35
+surf_dC_CO2_hw	35
+fan_cm_s	35
