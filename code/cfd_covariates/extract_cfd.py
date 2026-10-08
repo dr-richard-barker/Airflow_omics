@@ -209,7 +209,13 @@ for hw in HW_CFD:
                 row["dishmean_CO2_hw"] = 0.0  # vented/steady at ambient on Earth
 
             # --- 12h carbon fixation % (T11) ---
-            if gkey == "earth":
+            # T11 is a 0-D enclosure mass balance with no gravity term, and LunarLeaf T20
+            # shows a sealed BRIC dish runs out of CO2 at the same rate at 1 g and 0 g.
+            # BRIC ground controls use the same sealed hardware (confirmed by R. Barker,
+            # 2026-10-08), so they get the BRIC value too, not 100 %: BRIC's carbon
+            # deficit is a hardware effect shared by flight and ground.
+            # TODO: CARA/VEGGIE ground-control hardware not yet confirmed; they keep 100 %.
+            if gkey == "earth" and hw != "BRIC":
                 row["carbon_12h_pct_earth"] = 100.0
             else:
                 t11_row = t11[t11["enclosure"] == hw]

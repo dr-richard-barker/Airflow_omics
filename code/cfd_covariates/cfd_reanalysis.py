@@ -196,10 +196,20 @@ def main():
         if len(bad):
             log("Columns that do not reproduce:\n")
             log(md(bad))
-            if set(bad.column) <= {"earth_equiv_fan_cm_s", "fan_cm_s"}:
-                log("\nExpected: on 2026-10-07 extract_cfd.py stopped hard-coding these (2.8 / 11.0 cm/s Earth-equivalent; "
-                    "2.8 cm/s as the VEGGIE fan) and now reads the Earth-equivalent speeds from T9 and uses the modelled "
-                    "VEGGIE fan speed (8.3 cm/s). Every other column reproduces, which validates the mapping.")
+            by_design = {
+                "earth_equiv_fan_cm_s": "read from T9 instead of hard-coded 2.8 / 11.0 cm/s (2026-10-07)",
+                "fan_cm_s": "VEGGIE fan is the modelled 8.3 cm/s, not the Earth-equivalent 2.8 (2026-10-07)",
+                "carbon_12h_pct_earth": "BRIC ground controls use the same sealed hardware, so they get T11's BRIC value, not 100 % (2026-10-08)",
+                "A_start_umol_m2_s": "as carbon_12h_pct_earth: BRIC ground controls now carry T11's BRIC values (2026-10-08)",
+                "A_end_umol_m2_s": "as carbon_12h_pct_earth: BRIC ground controls now carry T11's BRIC values (2026-10-08)",
+            }
+            if set(bad.column) <= set(by_design):
+                log("\nAll expected, from deliberate changes to extract_cfd.py:\n")
+                for col in bad.column:
+                    log(f"- `{col}`: {by_design[col]}")
+                log("\nEvery other column reproduces, which validates the mapping.")
+            else:
+                log("\n**Unexpected mismatches:** " + ", ".join(sorted(set(bad.column) - set(by_design))))
         log("")
     else:
         log("LUNARLEAF_OLD_TABLES not set: mapping check skipped.\n")
@@ -236,6 +246,11 @@ def main():
         a, b = p_old[p_old.cfd_covariate == cv], p_new[p_new.cfd_covariate == cv]
         log(f"- `{cv}`: FDR < 0.05 in {int((a.fdr < 0.05).sum())}/{len(a)} pathways with old covariates, "
             f"{int((b.fdr < 0.05).sum())}/{len(b)} with new; max |r| {a.correlation.abs().max():.3f} -> {b.correlation.abs().max():.3f}.")
+    cv = meta_new.groupby(["cfd_hardware", "flight"])["carbon_12h_pct_earth"].first().unstack()
+    log("\n`carbon_12h_pct_earth` by hardware and flight (new covariates): "
+        + "; ".join(f"{hw} FLT {cv.loc[hw, 'FLT']:g} / GC {cv.loc[hw, 'GC']:g}" for hw in cv.index)
+        + ". Within BRIC it no longer differs between flight and ground, so its correlation with pathway scores "
+        "now reflects which studies used BRIC (a between-study, hardware difference), not a flight effect.")
     log("")
 
     # 5. identifiability + within-study model

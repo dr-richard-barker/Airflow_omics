@@ -251,7 +251,7 @@ Consequences:
 - **The 0 g conductance is well defined** (constant 0.187, matching T19). The 1 g value has no single steady level: it rises to ≈ 0.40 while photosynthesis is active.
 - **The buoyancy fix alone barely changes the earlier 1 g value** (0.327 vs 0.330 at 26 s).
 - **CARA (taped) keeps assimilation at 94–96 %.**
-- **Implication for the omics covariates (TODO: confirm with flight records).** If BRIC ground controls used the same sealed hardware, which is standard practice, they starve as fast as the flight samples. `extract_cfd.py` currently sets `carbon_12h_pct_earth = 100` for every ground-control sample. BRIC's "≈ 1 % of Earth carbon" would then be a hardware effect shared by flight and ground, which cancels in FLT − GC, not a flight effect.
+- **Implication for the omics covariates (applied 2026-10-08).** BRIC ground controls use the same sealed hardware (confirmed by R. Barker), so they starve as fast as the flight samples. `extract_cfd.py` now gives BRIC ground controls T11's BRIC value (1 %) instead of 100 %. BRIC's carbon deficit is a hardware effect shared by flight and ground, and cancels in FLT − GC. With the fix, `carbon_12h_pct_earth` is a BRIC-vs-other label, so its pathway correlations (max |r| 0.29 → 0.59) now measure differences between studies, not flight. The within-study results are unchanged (0/28). CARA/VEGGIE ground-control hardware is not yet confirmed (TODO).
 
 ## 4. Not yet borrowed (recommended next)
 

@@ -4,15 +4,26 @@
 
 ## 1. Mapping check (old LunarLeaf tables -> stored covariates)
 
-Rebuilt the stored covariates from LunarLeaf `lunarleaf_tables_b3567f6`: 28/30 columns reproduce exactly.
+Rebuilt the stored covariates from LunarLeaf `lunarleaf_tables_b3567f6`: 25/30 columns reproduce exactly.
 Columns that do not reproduce:
 
 | column | n_mismatch |
 |---|---|
+| carbon_12h_pct_earth | 106 |
+| A_start_umol_m2_s | 106 |
+| A_end_umol_m2_s | 106 |
 | earth_equiv_fan_cm_s | 136 |
 | fan_cm_s | 35 |
 
-Expected: on 2026-10-07 extract_cfd.py stopped hard-coding these (2.8 / 11.0 cm/s Earth-equivalent; 2.8 cm/s as the VEGGIE fan) and now reads the Earth-equivalent speeds from T9 and uses the modelled VEGGIE fan speed (8.3 cm/s). Every other column reproduces, which validates the mapping.
+All expected, from deliberate changes to extract_cfd.py:
+
+- `carbon_12h_pct_earth`: BRIC ground controls use the same sealed hardware, so they get T11's BRIC value, not 100 % (2026-10-08)
+- `A_start_umol_m2_s`: as carbon_12h_pct_earth: BRIC ground controls now carry T11's BRIC values (2026-10-08)
+- `A_end_umol_m2_s`: as carbon_12h_pct_earth: BRIC ground controls now carry T11's BRIC values (2026-10-08)
+- `earth_equiv_fan_cm_s`: read from T9 instead of hard-coded 2.8 / 11.0 cm/s (2026-10-07)
+- `fan_cm_s`: VEGGIE fan is the modelled 8.3 cm/s, not the Earth-equivalent 2.8 (2026-10-07)
+
+Every other column reproduces, which validates the mapping.
 
 ## 2. Covariates that change with the corrected LunarLeaf tables
 
@@ -24,12 +35,15 @@ Expected: on 2026-10-07 extract_cfd.py stopped hard-coding these (2.8 / 11.0 cm/
 | dC_O2_peak | 239 |
 | g_bl_mol_m2_s | 221 |
 | sherwood | 221 |
-| delta_mm | 153 |
-| dC_CO2_mean_bl | 153 |
-| o2_excess_ppm_bl | 153 |
 | dC_H2O_mean | 153 |
+| o2_excess_ppm_bl | 153 |
 | dC_CO2_mean | 153 |
+| delta_mm | 153 |
 | dC_O2_mean | 153 |
+| dC_CO2_mean_bl | 153 |
+| carbon_12h_pct_earth | 106 |
+| A_start_umol_m2_s | 106 |
+| A_end_umol_m2_s | 106 |
 | u_max | 86 |
 | surf_dC_H2O_hw | 35 |
 | surf_dC_CO2_hw | 35 |
@@ -44,8 +58,10 @@ Not updated because their LunarLeaf source tables were not regenerated: co2_draw
 Reproduces the stored `pathway_cfd_correlations.tsv`: 84/84 rows matched, max |Δr| = 7.77e-16.
 
 - `g_bl_mol_m2_s`: FDR < 0.05 in 28/28 pathways with old covariates, 28/28 with new; max |r| 0.467 -> 0.431.
-- `carbon_12h_pct_earth`: FDR < 0.05 in 27/28 pathways with old covariates, 27/28 with new; max |r| 0.294 -> 0.294.
+- `carbon_12h_pct_earth`: FDR < 0.05 in 27/28 pathways with old covariates, 27/28 with new; max |r| 0.294 -> 0.585.
 - `delta_mm`: FDR < 0.05 in 28/28 pathways with old covariates, 28/28 with new; max |r| 0.460 -> 0.422.
+
+`carbon_12h_pct_earth` by hardware and flight (new covariates): BRIC FLT 1 / GC 1; CARA FLT 90 / GC 100; VEGGIE FLT 100 / GC 100. Within BRIC it no longer differs between flight and ground, so its correlation with pathway scores now reflects which studies used BRIC (a between-study, hardware difference), not a flight effect.
 
 ## 4. Is g_bl identifiable separately from flight and scale?
 
