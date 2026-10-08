@@ -239,6 +239,20 @@ Consequences:
   - The 1 mm wall and base thickness is assumed.
   - Rosettes do not fit under the lid yet.
 
+**Sealed BRIC with photosynthesis feedback (LunarLeaf T20, F15).** The T19 sealed runs used a fixed flux, so the dish's CO₂ fell without bound. T20 makes uptake CO₂-limited (stopping at the compensation point) and measures buoyancy from the dish's own mean, the correct reference in a closed dish.
+
+| sealed BRIC + feedback | 1 g | 0 g |
+|---|---|---|
+| assimilation at 26 s / 100 s / 200 s | 84 / 44 / 10 % | 81 / 43 / 11 % |
+| dish reaches compensation | ≈ 204 s | ≈ 219 s |
+| g_bl to dish air while assimilating | 0.33 → ≈ 0.40 | 0.187 (constant) |
+
+- **The dish runs out of CO₂ in about 3.5 min at either gravity.** The dish-level mass balance does not depend on gravity. T8's analytic estimate is ≈ 7 min; the model time depends on the photosynthesis calibration.
+- **The 0 g conductance is well defined** (constant 0.187, matching T19). The 1 g value has no single steady level: it rises to ≈ 0.40 while photosynthesis is active.
+- **The buoyancy fix alone barely changes the earlier 1 g value** (0.327 vs 0.330 at 26 s).
+- **CARA (taped) keeps assimilation at 94–96 %.**
+- **Implication for the omics covariates (TODO: confirm with flight records).** If BRIC ground controls used the same sealed hardware, which is standard practice, they starve as fast as the flight samples. `extract_cfd.py` currently sets `carbon_12h_pct_earth = 100` for every ground-control sample. BRIC's "≈ 1 % of Earth carbon" would then be a hardware effect shared by flight and ground, which cancels in FLT − GC, not a flight effect.
+
 ## 4. Not yet borrowed (recommended next)
 
 1. **Couple chamber scale to leaf scale.** The tray-plane speed (0.30 m/s at the Ø40 mm operating point, control arm; 45.7 % of tray area within 0.2–0.5 m/s) is exactly the far-field boundary condition LunarLeaf's fan scenes need. It is a measured CFD number that could replace a hand-typed fan speed. A joint student project writes itself here.
