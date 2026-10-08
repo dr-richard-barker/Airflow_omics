@@ -248,10 +248,24 @@ Consequences:
 | g_bl to dish air while assimilating | 0.33 → ≈ 0.40 | 0.187 (constant) |
 
 - **The dish runs out of CO₂ in about 3.5 min at either gravity.** The dish-level mass balance does not depend on gravity. T8's analytic estimate is ≈ 7 min; the model time depends on the photosynthesis calibration.
-- **The 0 g conductance is well defined** (constant 0.187, matching T19). The 1 g value has no single steady level: it rises to ≈ 0.40 while photosynthesis is active.
+- **The 0 g conductance is well defined** (constant 0.187, matching T19). The 1 g value rose to ≈ 0.40 while photosynthesis was active, but see the correction below: that plateau needs unbounded humidity.
 - **The buoyancy fix alone barely changes the earlier 1 g value** (0.327 vs 0.330 at 26 s).
 - **CARA (taped) keeps assimilation at 94–96 %.**
 - **Implication for the omics covariates (applied 2026-10-08).** BRIC ground controls use the same sealed hardware (confirmed by R. Barker), so they starve as fast as the flight samples. `extract_cfd.py` now gives BRIC ground controls T11's BRIC value (1 %) instead of 100 %. BRIC's carbon deficit is a hardware effect shared by flight and ground, and cancels in FLT − GC. With the fix, `carbon_12h_pct_earth` is a BRIC-vs-other label, so its pathway correlations (max |r| 0.29 → 0.59) now measure differences between studies, not flight. The within-study results are unchanged (0/28). CARA/VEGGIE ground-control hardware is not yet confirmed (TODO).
+
+**What drives the 1 g conductance, and a correction to T20 (LunarLeaf T21, T22, F16, F17).** Diagnostic runs separated the two candidate explanations for T20's 1 g rise:
+- **The rise at 0.5–1 min is convection onset.** It appears equally with fixed uptake.
+- **Transpiration then sustained it.** With CO₂ + O₂ buoyancy only, g_bl falls as photosynthesis fades.
+
+But the model held transpiration constant, so the sealed dish accumulated humidity without bound, and after ≈ 3.7 min the flow ran away toward the Mach limit. **T20's late 1 g collapse was this runaway, not an ill-conditioned ratio, and its ≈ 0.40 plateau depended on unbounded humidity.**
+
+With transpiration driven by the leaf-to-air humidity gap (T22; saturation level estimated, not calibrated):
+- The dish saturates in 1–2 min, and transpiration stops.
+- Convection dies away. The 1 g conductance decays toward the 0 g value: 0.26 at 60 s, 0.21 at 200 s, 0.19 by 5 min. The 0 g value stays 0.187.
+- There is no runaway.
+- The result holds across a 4× range of the saturation level.
+
+**In a sealed BRIC dish the 1 g and 0 g boundary layers converge within minutes**, so BRIC ground controls see nearly the same leaf-level gas exchange as flight. Real agar releases water, so a real dish is probably near saturation from the start, which strengthens this.
 
 ## 4. Not yet borrowed (recommended next)
 
