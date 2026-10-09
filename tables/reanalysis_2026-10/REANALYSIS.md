@@ -137,6 +137,50 @@ Within-study model on this subset (`score ~ study + flight + flight × CARA`, CR
 - Positive control: a planted effect of 1 SD of the unit-level effects per SD of penalty is detected (p < 0.05) in 24/28 pathways.
 - Caveats: few units, the penalty varies only by hardware × scale (so it is also confounded with which studies used which hardware), and T10's BRIC/CARA values are the original 3.8 s values, not steady state.
 
+## 9. Gene-level limma refit with the v2 covariates
+
+`code/factorial_model/refit_gene_level_2026-10.R`, from the 11 OSDR processed files (7 RNA-seq, 4 microarray; download manifest with SHA-256 in `Airflow_omics_osdr_data/raw_osdr/MANIFEST.json`). Gene tables: `gene_level/`.
+
+**Reconstructing the missing filtering step.** No script in the package writes `harmonized_expression_matrix_filtered.tsv`. Of two candidate rules, only one reproduces the stored fit:
+
+| rule | genes after CPM filter | inter-study ρ (Model 1) | t vs stored Flight_FLT_vs_GC |
+|---|---|---|---|
+| drop genes missing in any study | 17,129 | 0.6412 | 0.9917 |
+| set missing values to 0 | 25,453 | 0.7327 | 0.9988 |
+| stored fit | 25,453 | 0.7324 | — |
+
+Model 2 reproduces too (ρ 0.7767 vs stored 0.7782; t-statistic correlation with the stored g_bl, carbon_12h and flight tables 0.996–0.998).
+So the original pipeline **set unmeasured genes to 0**: of 30,833 genes in the outer join, those measured only by RNA-seq enter every microarray sample as zero expression (and genes absent from one RNA-seq study are zero there). This builds study × platform differences into the matrix. It also passes microarray log2 intensities through `DGEList`/`voom` as if they were counts.
+
+**Pooled refit (same pipeline, v2 covariates).** Genes at FDR < 0.05 (|logFC| > 1 in brackets):
+
+| contrast | v1 (stored) | v2 refit |
+|---|---|---|
+| flight within BRIC (stored name `Flight_FLT_vs_GC`) | 11,783 | 11,675 (715) |
+| **flight averaged over BRIC/CARA/VEGGIE** | not fitted | 4,598 (285) |
+| flight × CARA | 6,909 | 6,822 |
+| flight × VEGGIE | 10,904 | 10,491 |
+| Model 2: g_bl | 4,020 | 8,954 |
+| Model 2: carbon_12h | 9,561 | 8,449 |
+
+- The within-BRIC and averaged flight effects agree only weakly (logFC correlation 0.352). The stored headline is the BRIC-specific effect.
+- g_bl: VIF 13.6 in Model 2. It takes 4 values and recodes flight × scale (§4), so its gene count is not a boundary-layer effect.
+- carbon_12h: study membership explains 99.9 % of its variance (v2 sets every BRIC sample to 1 %). Its genes are a BRIC-studies-versus-the-rest contrast, not a carbon dose response. The |logFC| > 1 count is 0 because the unit is 1 % of Earth carbon.
+
+**Platform-separated sensitivity.** RNA-seq: voom on RSEM expected counts, `filterByExpr`, no zero-filling. Microarray: limma-trend on log2 intensities. All microarray samples are BRIC, so hardware terms and carbon_12h drop out there.
+
+| contrast | RNA-seq | microarray |
+|---|---|---|
+| samples / studies | 213 / 7 | 94 / 4 |
+| flight within BRIC | 10,995 | 115 |
+| flight averaged over hardware | 3,258 | — |
+| g_bl | 7,460 | 656 |
+| carbon_12h | 2,598 | not estimable |
+
+- Within BRIC, the RNA-seq and microarray flight effects are uncorrelated (logFC r = -0.050), and the pooled within-BRIC effect does not track the microarray one (r = -0.022). The pooled averaged effect does track the RNA-seq-only one (r = 0.849).
+- **Reading:** the gene level agrees with §5 and §8. Neither CFD covariate is identifiable from study and hardware, so neither gene count supports a gas-exchange interpretation. The flight response differs by hardware and by platform/study era, and pooling with zero-filled genes hides that. Report the averaged flight effect, by platform, as the headline.
+- Caveats: the inter-study correlation uses one `duplicateCorrelation` pass, matching the original script. The variance-partition section of `fit_factorial_model.R` was not rerun (variancePartition not installed). Pathway (GSVA) scores were not recomputed from the rebuilt matrix.
+
 ## Not done here
 
-Gene-level limma models (`fit_factorial_model.R`) need `harmonized_expression_matrix_filtered.tsv` from the Biomni workspace. Re-run them with `expression_metadata_with_cfd_v2.tsv`, treating g_bl as non-identifiable from flight × organ, and with effect (sum-to-zero) coding so 'Flight' is a main effect.
+The gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`, run after `cfd_meta_regression.py`). Still open: the variance-partition section of `fit_factorial_model.R`; a pooled fit without zero-filled genes; recomputing pathway (GSVA) scores from the rebuilt matrix.

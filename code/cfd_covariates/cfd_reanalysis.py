@@ -393,10 +393,7 @@ def main():
 
     for line in dish_section:
         log(line)
-    log("\n## Not done here\n\nGene-level limma models (`fit_factorial_model.R`) need "
-        "`harmonized_expression_matrix_filtered.tsv` from the Biomni workspace. Re-run them with "
-        "`expression_metadata_with_cfd_v2.tsv`, treating g_bl as non-identifiable from flight × organ, "
-        "and with effect (sum-to-zero) coding so 'Flight' is a main effect.")
+    log("\n## Not done here\n\nThe gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`, run after `cfd_meta_regression.py`). Still open: the variance-partition section of `fit_factorial_model.R`; a pooled fit without zero-filled genes; recomputing pathway (GSVA) scores from the rebuilt matrix.")
     open(os.path.join(OUT, "REANALYSIS.md"), "w").write("\n".join(report) + "\n")
     print(f"\nwrote {OUT}/")
 
