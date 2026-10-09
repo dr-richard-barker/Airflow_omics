@@ -267,6 +267,14 @@ With transpiration driven by the leaf-to-air humidity gap (T22; saturation level
 
 **In a sealed BRIC dish the 1 g and 0 g boundary layers converge within minutes**, so BRIC ground controls see nearly the same leaf-level gas exchange as flight. Real agar releases water, so a real dish is probably near saturation from the start, which strengthens this.
 
+**Wet agar (LunarLeaf T23), a negative result at 1 g.** Holding the agar surface at saturation leaves the 0 g leaf conductance unchanged (BRIC 0.186–0.189, CARA 0.192, the same as dry agar).
+
+At 1 g the agar-to-air humidity contrast pushes the H₂O buoyancy beyond the model's small-perturbation range:
+- Sealed BRIC accelerates from about 87 s and diverges at 129.5 s.
+- Taped CARA runs near Mach 0.17, then accelerates.
+
+The option is flagged as unsafe at 1 g. Wet agar at 1 g needs a calibrated humidity buoyancy coefficient (real RH values) before it can be modelled.
+
 ## 4. Not yet borrowed (recommended next)
 
 1. **Couple chamber scale to leaf scale.** The tray-plane speed (0.30 m/s at the Ø40 mm operating point, control arm; 45.7 % of tray area within 0.2–0.5 m/s) is exactly the far-field boundary condition LunarLeaf's fan scenes need. It is a measured CFD number that could replace a hand-typed fan speed. A joint student project writes itself here.
