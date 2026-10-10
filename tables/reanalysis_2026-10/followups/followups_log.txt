@@ -1,0 +1,36 @@
+== 4a. Pooled fit without zero-filled genes ==
+  genes measured in all 11 studies: 17129; after CPM filter: 17129 (zero-filled fit: 25,453)
+  rho: Model 1 0.6412, Model 2 0.6841 (zero-filled: 0.7327, 0.7588)
+  complete-case averaged flight vs RNA-seq-only averaged flight: logFC r = 0.893 (n = 17017)
+
+== 4b. Pathway scores ==
+  rebuilt vs stored scores: max |diff| = 5.33e-03, min per-pathway r = 1.000000
+  R port vs cfd_reanalysis.py: max |d estimate| = 4.79e-15, max |d p| = 2.17e-13 over 84 rows
+  per-study pathway coverage: 0 of 308 pathway x study cells have < 3 genes (score left NA)
+  flight t, stored vs rescored scores: r = 0.635
+  positive control: stored 28/28, 28/28; rescored 8/28, 15/28 (0.25 / 0.5 SD); rescored SD is 0.43 x the stored SD
+  all flight / scale / interaction SEs finite: TRUE
+
+R version 4.6.1 (2026-06-24)
+Platform: aarch64-apple-darwin25.4.0
+Running under: macOS Tahoe 26.5.2
+
+Matrix products: default
+BLAS:   /opt/homebrew/Cellar/openblas/0.3.34/lib/libopenblasp-r0.3.34.dylib 
+LAPACK: /opt/homebrew/Cellar/r/4.6.1/lib/R/lib/libRlapack.dylib;  LAPACK version 3.12.1
+
+locale:
+[1] en_US/en_US/en_US/C/en_US/en_US
+
+time zone: America/Indiana/Indianapolis
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] data.table_1.18.6.1 edgeR_4.10.5        limma_3.68.5       
+
+loaded via a namespace (and not attached):
+[1] MASS_7.3-65     compiler_4.6.1  grid_4.6.1      locfit_1.5-9.12
+[5] lattice_0.22-9  statmod_1.5.2  

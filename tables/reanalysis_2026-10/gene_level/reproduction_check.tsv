@@ -1,0 +1,4 @@
+contrast	n_common	cor_t	stored_sig	refit_sig
+CFD_g_bl	25453	0.996574374673111	3633	3282
+CFD_carbon_12h	25453	0.997615354324293	0	0
+CFDmodel_Flight_FLT_vs_GC	25453	0.995963834052722	1433	1400

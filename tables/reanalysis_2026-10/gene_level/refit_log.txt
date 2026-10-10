@@ -1,0 +1,62 @@
+== 1. Harmonized matrix ==
+  OSD-37    28067 genes x  56 cols
+  OSD-120   24740 genes x  36 cols
+  OSD-217   23251 genes x  12 cols
+  OSD-321   25520 genes x  44 cols
+  OSD-314   24039 genes x  17 cols
+  OSD-678   24489 genes x  36 cols
+  OSD-38    27725 genes x  12 cols
+  OSD-7     21112 genes x  37 cols
+  OSD-17    21112 genes x  25 cols
+  OSD-147   21112 genes x  19 cols
+  OSD-205   21112 genes x  17 cols
+  merged (outer): 30833 genes x 311 cols
+  restricted to metadata samples: 307
+  variant complete_cases   17129 genes,  17129 after CPM filter
+  variant na_to_zero       30833 genes,  25453 after CPM filter
+
+== 3. Reproduction check (original covariates) ==
+  complete_cases  genes=17129 (stored 25453)  rho=0.6412 (stored 0.7324)  t-corr vs stored=0.9917 (n=17129)
+  na_to_zero      genes=25453 (stored 25453)  rho=0.7327 (stored 0.7324)  t-corr vs stored=0.9988 (n=25453)
+  using variant: na_to_zero
+  Model 2 rho=0.7767 (stored 0.7782)
+
+== 4. Refit, v2 covariates ==
+  Model 2 design columns: X.Intercept., flightFLT, g_bl, carbon_12h, organ_simpleleaf, organ_simpleroot, organ_simpleshoot, organ_simpleundifferentiated.cell.culture, organ_simplewhole_seedling, lightdark, lightred_light, lightunspecified, ecotype_simpleWS, ecotype_simpleother
+  rho: Model 1 0.7327, Model 2 0.7588
+  VIF g_bl = 13.6; R^2 on study dummies = 0.269
+  VIF carbon_12h = 3.7; R^2 on study dummies = 0.999
+
+== 4b. Platform-separated sensitivity (v2) ==
+  RNA-seq: 213 samples, 7 studies; microarray: 94 samples, 4 studies
+  RNA-seq hardware x flight:
+  microarray hardware x flight:
+  RNA-seq genes after filterByExpr: 23531
+  microarray genes: 21112; value range 0.2-13.9 (log2)
+  rho: RNA-seq M1 0.707 M2 0.729; array M1 0.821 M2 0.823
+  RNA-seq Model 2 columns: X.Intercept., flightFLT, g_bl, carbon_12h, organ_simpleroot, organ_simplewhole_seedling, lightdark, lightred_light, lightunspecified, ecotype_simpleWS, ecotype_simpleother
+  array   Model 2 columns: X.Intercept., flightFLT, g_bl, organ_simpleroot, organ_simpleshoot, organ_simpleundifferentiated.cell.culture, organ_simplewhole_seedling, ecotype_simpleWS
+
+R version 4.6.1 (2026-06-24)
+Platform: aarch64-apple-darwin25.4.0
+Running under: macOS Tahoe 26.5.2
+
+Matrix products: default
+BLAS:   /opt/homebrew/Cellar/openblas/0.3.34/lib/libopenblasp-r0.3.34.dylib 
+LAPACK: /opt/homebrew/Cellar/r/4.6.1/lib/R/lib/libRlapack.dylib;  LAPACK version 3.12.1
+
+locale:
+[1] en_US/en_US/en_US/C/en_US/en_US
+
+time zone: America/Indiana/Indianapolis
+tzcode source: internal
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] data.table_1.18.6.1 edgeR_4.10.5        limma_3.68.5       
+
+loaded via a namespace (and not attached):
+[1] compiler_4.6.1  splines_4.6.1   grid_4.6.1      locfit_1.5-9.12
+[5] lattice_0.22-9  statmod_1.5.2  
