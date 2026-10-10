@@ -181,6 +181,44 @@ So the original pipeline **set unmeasured genes to 0**: of 30,833 genes in the o
 - **Reading:** the gene level agrees with §5 and §8. Neither CFD covariate is identifiable from study and hardware, so neither gene count supports a gas-exchange interpretation. The flight response differs by hardware and by platform/study era, and pooling with zero-filled genes hides that. Report the averaged flight effect, by platform, as the headline.
 - Caveats: the inter-study correlation uses one `duplicateCorrelation` pass, matching the original script. The variance-partition section of `fit_factorial_model.R` was not rerun (variancePartition not installed). Pathway (GSVA) scores were not recomputed from the rebuilt matrix.
 
+## 10. Follow-ups: no zero-filling at gene level; pathway scores recomputed
+
+`code/factorial_model/followups_2026-10.R` (shared loaders in `osdr_helpers_2026-10.R`). Tables: `followups/`.
+
+**Pooled gene-level fit on genes measured in all 11 studies.** Same pipeline and v2 covariates as §9, but only the 17,129 genes present in every study (17,129 after the CPM filter), so nothing is zero-filled. Inter-study ρ 0.6412 (zero-filled 0.7327).
+
+| contrast | zero-filled FDR < 0.05 (of 25,453) | complete-case FDR < 0.05 | logFC r on common genes | significant in both |
+|---|---|---|---|---|
+| flight within BRIC | 11,675 | 10,831 | 0.968 | 9,655 |
+| flight averaged over hardware | 4,598 | 3,637 | 0.958 | 3,352 |
+| flight × CARA | 6,822 | 6,171 | 0.959 | 5,467 |
+| flight × VEGGIE | 10,491 | 8,762 | 0.965 | 8,148 |
+| Model 2: g_bl | 8,954 | 7,111 | 0.952 | 6,204 |
+| Model 2: carbon_12h | 8,449 | 2,099 | 0.931 | 1,904 |
+
+- The averaged flight effect from the complete-case fit agrees with the RNA-seq-only fit at logFC r = 0.893.
+- carbon_12h loses most of its genes (8,449 -> 2,099): carbon_12h is 1 % for every BRIC sample and all microarray samples are BRIC, so genes that were zero-filled in the microarray studies looked like a carbon effect. g_bl goes from 8,954 to 7,111.
+- Removing the zero-filled genes does not rescue either CFD covariate: they stay confounded with study and hardware by design (§4, §9). Microarray and RNA-seq values are still pooled in one voom model here, which is why §9's platform-separated fit remains the preferred analysis.
+
+**Pathway scores recomputed from the rebuilt matrix.**
+
+- Reproduction: the original recipe (log2(x + 1) of the zero-filled matrix, genes z-scored across all 307 samples) applied to the rebuilt matrix reproduces `pathway_scores_gsva.tsv` (max |difference| 5.3e-03; minimum per-pathway r 1.000000). That recipe log-transforms the microarray values a second time, and its z-scores mix platforms and studies, so pathway scores carry the same zero-filling artefact as the gene matrix.
+- An R port of the §5 within-study model matches `cfd_reanalysis.py` on the stored scores (max |Δ estimate| 4.8e-15, max |Δ p| 2.2e-13).
+- The gene sets in `hormone_carbon_model.py` repeat 63 gene entries within their own set (in 20 of 28 pathways); the original scores count a repeated gene more than once. The worst case is AT5G52640 in heat_shock: 21 of its 32 entries, so the stored heat_shock score is mostly that one gene. The rescored version counts each gene once (`pathway_genesets.tsv`; repeats in `pathway_geneset_repeats.tsv`).
+- Rescored per study: RNA-seq as log2-CPM from RSEM expected counts (TMM, `filterByExpr`), microarray on its published log2 scale, each gene z-scored within its study, no zero-filling. 0 of 308 pathway × study cells have fewer than 3 measured genes and are left missing (`pathway_gene_coverage_by_study.tsv`).
+
+Within-study model (`score ~ study + flight × scale`, CR1 by study, BH per term), pathways with FDR < 0.05 out of 28:
+
+| scores | flight | scale | flight × scale |
+|---|---|---|---|
+| stored (zero-filled, pooled z) — §5 | 0 | 0 | 0 |
+| rescored, all 11 studies | 0 | 0 | 0 |
+| rescored, RNA-seq studies only (7) | 0 | 0 | 0 |
+
+- Flight t-statistics from the stored and rescored scores correlate at r = 0.635. Smallest rescored flight p: cytokinin_signaling (p = 0.023, FDR = 0.4).
+- Positive control (as in §5: a flight effect of 0.25 / 0.5 × the median score SD planted in every pathway): stored scores 28/28 and 28/28 (reproducing §5), rescored 8/28 and 15/28. The rescored SD is 0.43 × the stored SD because the stored scores' SD includes between-study and between-platform differences; relative to within-study variation, the §5 control planted larger effects than its label suggests.
+- **Reading:** with corrected scores no pathway term reaches FDR < 0.05, as in §5. But the corrected positive control shows the within-study test detects a 0.25 SD flight effect in only about a quarter of pathways and a 0.5 SD effect in about half, so the pathway-level null now reads as 'no large, consistent flight effect' rather than 'no effect'; effects below about half a within-study SD cannot be excluded at this sample of 11 studies. §5's statement that the null 'is not a powerless test' should be read with this correction. The §8 meta-regression and the §7 in-dish analysis still use the stored scores; rerunning them on `pathway_scores_within_study.tsv` is the next step if the pathway scores are to be carried into the paper.
+
 ## Not done here
 
-The gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`, run after `cfd_meta_regression.py`). Still open: the variance-partition section of `fit_factorial_model.R`; a pooled fit without zero-filled genes; recomputing pathway (GSVA) scores from the rebuilt matrix.
+The gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`) and its follow-ups §10 (`followups_2026-10.R`); run both after `cfd_meta_regression.py`. Still open: the variance-partition section of `fit_factorial_model.R` (variancePartition not installed); rerunning §7 and §8 on the rescored pathway scores.

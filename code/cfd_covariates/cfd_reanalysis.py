@@ -393,7 +393,7 @@ def main():
 
     for line in dish_section:
         log(line)
-    log("\n## Not done here\n\nThe gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`, run after `cfd_meta_regression.py`). Still open: the variance-partition section of `fit_factorial_model.R`; a pooled fit without zero-filled genes; recomputing pathway (GSVA) scores from the rebuilt matrix.")
+    log("\n## Not done here\n\nThe gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`) and its follow-ups §10 (`followups_2026-10.R`); run both after `cfd_meta_regression.py`. Still open: the variance-partition section of `fit_factorial_model.R` (variancePartition not installed); rerunning §7 and §8 on the rescored pathway scores.")
     open(os.path.join(OUT, "REANALYSIS.md"), "w").write("\n".join(report) + "\n")
     print(f"\nwrote {OUT}/")
 
