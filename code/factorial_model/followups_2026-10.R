@@ -165,7 +165,8 @@ per_study <- lapply(split(m2$full_sample_id, m2$osd_id), function(ids) {
 })
 S_new <- do.call(rbind, per_study)[m2$full_sample_id, ]
 cover <- sapply(per_study, attr, "n_genes")
-fwrite(data.table(full_sample_id = rownames(S_new), S_new), file.path(OUT, "pathway_scores_within_study.tsv"), sep = "\t")
+# same layout as tables/pathway_scores_gsva.tsv (unnamed index column) so cfd_reanalysis.py can read it
+write.table(S_new, file.path(OUT, "pathway_scores_within_study.tsv"), sep = "\t", quote = FALSE, col.names = NA)
 fwrite(data.table(pathway = rownames(cover), cover), file.path(OUT, "pathway_gene_coverage_by_study.tsv"), sep = "\t")
 n_missing <- sum(cover < 3)
 say(sprintf("  per-study pathway coverage: %d of %d pathway x study cells have < 3 genes (score left NA)", n_missing, length(cover)))
