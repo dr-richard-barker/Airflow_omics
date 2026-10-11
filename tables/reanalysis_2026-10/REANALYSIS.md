@@ -219,6 +219,53 @@ Within-study model (`score ~ study + flight × scale`, CR1 by study, BH per term
 - Positive control (as in §5: a flight effect of 0.25 / 0.5 × the median score SD planted in every pathway): stored scores 28/28 and 28/28 (reproducing §5), rescored 8/28 and 15/28. The rescored SD is 0.43 × the stored SD because the stored scores' SD includes between-study and between-platform differences; relative to within-study variation, the §5 control planted larger effects than its label suggests.
 - **Reading:** with corrected scores no pathway term reaches FDR < 0.05, as in §5. But the corrected positive control shows the within-study test detects a 0.25 SD flight effect in only about a quarter of pathways and a 0.5 SD effect in about half, so the pathway-level null now reads as 'no large, consistent flight effect' rather than 'no effect'; effects below about half a within-study SD cannot be excluded at this sample of 11 studies. §5's statement that the null 'is not a powerless test' should be read with this correction. The §8 meta-regression and the §7 in-dish analysis still use the stored scores; rerunning them on `pathway_scores_within_study.tsv` is the next step if the pathway scores are to be carried into the paper.
 
+## 11. §5, §7 and §8 on the rescored pathway scores
+
+The same scripts (`cfd_reanalysis.py`, `cfd_meta_regression.py`) rerun with `PATHWAY_SCORES=followups/pathway_scores_within_study.tsv` and `REANALYSIS_OUT=followups/rescored` (full report: `followups/rescored/REANALYSIS.md`). Comparison by `code/cfd_covariates/rescored_comparison.py`.
+
+| analysis | stored scores | rescored scores |
+|---|---|---|
+| §5 within-study model, flight (FDR < 0.05 of 28) | 0 (none) | 0 (none) |
+| §5 within-study model, scale (FDR < 0.05 of 28) | 0 (none) | 3 (ethylene_biosynthesis, gravitropism_signaling, ja_signaling) |
+| §5 within-study model, flight_x_scale (FDR < 0.05 of 28) | 0 (none) | 0 (none) |
+| §5 positive control, 0.25 / 0.5 SD | 28/28, 28/28 | 8/28, 15/28 |
+| §7 in-dish subset, flight (FDR < 0.05 of 28) | 0 (none) | 1 (auxin_biosynthesis) |
+| §8 Knapp–Hartung meta-regression (FDR < 0.05 of 28) | 1 (ga_biosynthesis) | 0 (none) |
+| §8 positive control (detected of 28) | 24 | 20 |
+
+- Per-pathway flight t-statistics (§5) correlate at r = 0.64 between stored and rescored scores; meta-regression slopes (§8) at r = 0.32.
+- §8's one stored hit, ga_biosynthesis (Knapp–Hartung p = 0.00082), has p = 0.0067 (FDR = 0.094) on the rescored scores. Its stored score repeats 4 gene(s) in its set and includes zero-filled genes, and the VEGGIE-vs-sealed-hardware signal reported in §8 does not survive correct scoring.
+- The rescored scores show a scale (rosette vs leaf) difference in 3 pathway(s), consistent with organ composition once study and platform scale differences are removed.
+- **Reading:** on correctly scored pathways, neither the all-study model (§5) nor the meta-regression (§8) finds a flight effect or a CFD dose-response at FDR < 0.05; the in-dish subset (§7: 5 studies, t on 4 df) flags 1 pathway(s) for flight (auxin_biosynthesis), which is a single hit among 28 on a small subset and is not replicated in §5. The positive controls show the pathway-level tests can only rule out large effects. The pathway results support 'no large, consistent pathway-level flight response across these 11 studies', not a boundary-layer mechanism; the CARA-specific flight response remains untestable (one study).
+
+## 12. Variance partitioning, redone
+
+`code/factorial_model/variance_partition_2026-10.R`. Tables: `followups/variance_partition_*`.
+
+The stored `tables/variance_partition_summary.tsv` should not be used. `fit_factorial_model.R` entered the categorical factors as fixed effects, which variancePartition does not partition correctly, and the stored summary is internally inconsistent: `cfd_hardware` has a median of 66 % but a mean of ~0 %, which is impossible for non-negative fractions, and there are no residual, g_bl or carbon_12h rows.
+
+Here every categorical factor is a random effect, and hardware and study enter as nested components (each study used one hardware; canonical correlation hardware ~ study = 1.00). g_bl and carbon_12h are left out: they are functions of hardware × flight × scale (canonical correlation carbon_12h ~ study = 1.00).
+
+Percent of each gene's variance, mean / median across genes:
+
+| component | pooled, genes in all studies (17,129 genes, 307 samples) | RNA-seq only (23,531 genes, 213 samples) |
+|---|---|---|
+| study (within hardware) | 53.3 / 56.1 | 44.8 / 45.9 |
+| hardware | 0.2 / 0.0 | 0.2 / 0.0 |
+| organ | 1.5 / 0.0 | 1.3 / 0.0 |
+| light | 9.9 / 6.8 | 10.2 / 7.4 |
+| ecotype | 6.7 / 3.4 | 7.4 / 3.3 |
+| flight (common to all studies) | 0.3 / 0.0 | 0.6 / 0.0 |
+| flight × hardware | 2.5 / 0.0 | 2.2 / 0.0 |
+| flight × study | 8.3 / 4.4 | 11.9 / 6.5 |
+| **all flight terms** | 11.1 / 5.7 | 14.7 / 8.5 |
+| residual | 17.3 / 14.8 | 21.4 / 17.5 |
+
+- Study and hardware together account for 54 % (pooled) and 45 % (RNA-seq) of the average gene's variance; all flight terms together for 11 % and 15 %.
+- Of the flight variance, the part shared by all studies is 0.3 % (pooled) and 0.6 % (RNA-seq); the study-specific part (flight × study) is 8.3 % and 11.9 %. The flight response is mostly study-specific, which is why pooled flight contrasts are sensitive to which studies are included (§9).
+- Genes with more than 10 % of their variance in the flight effect common to all studies: 10 of 17,129 (pooled) and 71 of 23,531 (RNA-seq); in flight × study: 4,597 and 8,899.
+- Hardware and flight × hardware are estimated from only 3 hardware groups, so their split from the study components is imprecise; read study + hardware, and the three flight terms, as totals.
+
 ## Not done here
 
-The gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`) and its follow-ups §10 (`followups_2026-10.R`); run both after `cfd_meta_regression.py`. Still open: the variance-partition section of `fit_factorial_model.R` (variancePartition not installed); rerunning §7 and §8 on the rescored pathway scores.
+The gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`), its follow-ups §10 (`followups_2026-10.R`), the rescored §5/§7/§8 comparison §11 (`code/cfd_covariates/rescored_comparison.py`) and the variance partition §12 (`variance_partition_2026-10.R`); run them in that order after `cfd_meta_regression.py`. No analysis items from this reanalysis remain open. Open for the authors: the headline claim, and whether the RNA-seq vs microarray difference in the flight response (§9) is reported as a finding.

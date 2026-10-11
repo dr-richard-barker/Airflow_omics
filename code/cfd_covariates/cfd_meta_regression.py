@@ -32,7 +32,10 @@ from scipy import stats
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TAB = os.path.join(os.path.dirname(os.path.dirname(HERE)), "tables")  # code/cfd_covariates/ -> repo root
-OUT = os.path.join(TAB, "reanalysis_2026-10")
+# REANALYSIS_OUT / PATHWAY_SCORES let the same analysis run on rescored pathway scores
+# (followups_2026-10.R) without touching the primary outputs.
+OUT = os.path.expanduser(os.environ.get("REANALYSIS_OUT", os.path.join(TAB, "reanalysis_2026-10")))
+SCORES = os.path.expanduser(os.environ.get("PATHWAY_SCORES", os.path.join(TAB, "pathway_scores_gsva.tsv")))
 
 
 def bh(p):
@@ -81,7 +84,7 @@ def kh_meta_regression(y, v, x):
 
 def main():
     meta = pd.read_csv(os.path.join(OUT, "expression_metadata_with_cfd_v2.tsv"), sep="\t")
-    scores = pd.read_csv(os.path.join(TAB, "pathway_scores_gsva.tsv"), sep="\t", index_col=0)
+    scores = pd.read_csv(SCORES, sep="\t", index_col=0)
     pathways = list(scores.columns)
     scores["full_sample_id"] = scores.index.astype(str)
     df = scores.merge(meta, on="full_sample_id", how="left")
@@ -145,9 +148,12 @@ def main():
         f"significant with a plain VEGGIE-vs-other indicator, and {int(((R.fdr < 0.05) & (R.p_bric_only_units < 0.05)).sum())} "
         "show the slope within BRIC units alone (where the penalty varies only by organ scale). "
         f"Leave-one-study-out: {int(((R.fdr < 0.05) & (R.p_loso_max < 0.05)).sum())} stay p < 0.05 whichever study is dropped.",
-        "- **Reading:** the signal is a VEGGIE-versus-sealed-hardware difference in the flight response, consistent "
-        "with the boundary-layer physics but not separable from which studies (labs, years, organs) used VEGGIE. "
-        "There is no evidence yet of a within-hardware dose-response to the predicted penalty.",
+        ("- **Reading:** the signal is a VEGGIE-versus-sealed-hardware difference in the flight response, consistent "
+         "with the boundary-layer physics but not separable from which studies (labs, years, organs) used VEGGIE. "
+         "There is no evidence yet of a within-hardware dose-response to the predicted penalty."
+         if (R.fdr < 0.05).any() else
+         "- **Reading:** no pathway's flight effect tracks the predicted penalty after FDR correction, so the "
+         "meta-regression gives no support for a boundary-layer dose-response at this number of study units."),
         f"- Positive control: a planted effect of 1 SD of the unit-level effects per SD of penalty is detected "
         f"(p < 0.05) in {detected}/{len(R)} pathways.",
         "- Caveats: few units, the penalty varies only by hardware × scale (so it is also confounded with which "

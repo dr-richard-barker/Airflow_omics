@@ -42,7 +42,10 @@ from scipy import stats
 HERE = os.path.dirname(os.path.abspath(__file__))
 PKG = os.path.dirname(os.path.dirname(HERE))  # code/cfd_covariates/ -> repo root
 TAB = os.path.join(PKG, "tables")
-OUT = os.path.join(TAB, "reanalysis_2026-10")
+# REANALYSIS_OUT / PATHWAY_SCORES let the same analysis run on rescored pathway scores
+# (followups_2026-10.R) without touching the primary outputs.
+OUT = os.path.expanduser(os.environ.get("REANALYSIS_OUT", os.path.join(TAB, "reanalysis_2026-10")))
+SCORES = os.path.expanduser(os.environ.get("PATHWAY_SCORES", os.path.join(TAB, "pathway_scores_gsva.tsv")))
 os.makedirs(OUT, exist_ok=True)
 # numpy 2.0 + macOS Accelerate emits spurious matmul overflow warnings on well-conditioned
 # products; coefficients were checked against np.linalg.lstsq (max |diff| ~ 4e-15).
@@ -177,7 +180,7 @@ def main():
     log = lambda s="": (print(s), report.append(s))  # noqa: E731
 
     meta = pd.read_csv(os.path.join(TAB, "expression_metadata_with_cfd.tsv"), sep="\t")
-    scores = pd.read_csv(os.path.join(TAB, "pathway_scores_gsva.tsv"), sep="\t", index_col=0)
+    scores = pd.read_csv(SCORES, sep="\t", index_col=0)
     pathways = list(scores.columns)
     log(f"# CFD covariate update and pathway re-analysis\n\n{len(meta)} samples, {meta.osd_id.nunique()} studies, {len(pathways)} pathways.\n")
 
@@ -303,8 +306,11 @@ def main():
         "307 samples as independent when they cluster in 11 studies.")
     log("Positive control: a flight effect planted in every pathway is detected (p < 0.05) in "
         + ", ".join(f"{v}/{len(pathways)} at {k} SD" for k, v in planted.items())
-        + ", so the null result is not a powerless test; the pathway-level flight effects are small or inconsistent "
-        "across studies relative to between-study variation.")
+        + (", so the null result is not a powerless test; the pathway-level flight effects are small or inconsistent "
+           "across studies relative to between-study variation."
+           if min(planted.values()) >= 0.9 * len(pathways) else
+           ", so the test has limited power: flight effects below about half an SD cannot be excluded, and the null "
+           "means no large, consistent flight effect rather than no effect."))
     g_sig = set(p_new[(p_new.cfd_covariate == "g_bl_mol_m2_s") & (p_new.fdr < 0.05)].pathway)
     any_ws = set(ws[(ws.fdr < 0.05)].pathway)
     log(f"\nOf the {len(g_sig)} pathways 'significant' for g_bl by Pearson, {len(g_sig & any_ws)} have any FDR < 0.05 "
@@ -393,7 +399,7 @@ def main():
 
     for line in dish_section:
         log(line)
-    log("\n## Not done here\n\nThe gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`) and its follow-ups §10 (`followups_2026-10.R`); run both after `cfd_meta_regression.py`. Still open: the variance-partition section of `fit_factorial_model.R` (variancePartition not installed); rerunning §7 and §8 on the rescored pathway scores.")
+    log("\n## Not done here\n\nThe gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`), its follow-ups §10 (`followups_2026-10.R`), the rescored §5/§7/§8 comparison §11 (`code/cfd_covariates/rescored_comparison.py`) and the variance partition §12 (`variance_partition_2026-10.R`); run them in that order after `cfd_meta_regression.py`. No analysis items from this reanalysis remain open. Open for the authors: the headline claim, and whether the RNA-seq vs microarray difference in the flight response (§9) is reported as a finding.")
     open(os.path.join(OUT, "REANALYSIS.md"), "w").write("\n".join(report) + "\n")
     print(f"\nwrote {OUT}/")
 

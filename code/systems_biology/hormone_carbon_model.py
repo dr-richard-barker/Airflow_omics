@@ -124,6 +124,13 @@ PATHWAY_GENESETS = {
         "AT5G59290","AT3G46600"],
 }
 
+# Several sets above repeat genes (63 repeated entries in 20 sets; AT5G52640 fills 21 of
+# the 32 heat_shock entries, which looks like padding rather than curation). Repeats gave
+# a gene extra weight in the score. Count each gene once. The stored
+# tables/pathway_scores_gsva.tsv predates this fix (REANALYSIS §10); heat_shock has only
+# 10 distinct genes and its curation should be reviewed.
+PATHWAY_GENESETS = {k: list(dict.fromkeys(v)) for k, v in PATHWAY_GENESETS.items()}
+
 
 def load_expression_data():
     print("Loading expression data...")
