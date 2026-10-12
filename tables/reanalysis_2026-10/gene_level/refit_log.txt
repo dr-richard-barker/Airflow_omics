@@ -22,20 +22,21 @@
   Model 2 rho=0.7767 (stored 0.7782)
 
 == 4. Refit, v2 covariates ==
-  Model 2 design columns: X.Intercept., flightFLT, g_bl, carbon_12h, organ_simpleleaf, organ_simpleroot, organ_simpleshoot, organ_simpleundifferentiated.cell.culture, organ_simplewhole_seedling, lightdark, lightred_light, lightunspecified, ecotype_simpleWS, ecotype_simpleother
-  rho: Model 1 0.7327, Model 2 0.7588
-  VIF g_bl = 13.6; R^2 on study dummies = 0.269
-  VIF carbon_12h = 3.7; R^2 on study dummies = 0.999
+  Model 2: 290 samples with CFD covariates (17 EMCS samples excluded)
+  Model 2 design columns: X.Intercept., flightFLT, g_bl, carbon_12h, organ_simpleleaf, organ_simpleroot, organ_simpleshoot, organ_simpleundifferentiated.cell.culture, organ_simplewhole_seedling, lightdark, lightunspecified, ecotype_simpleWS, ecotype_simpleother
+  rho: Model 1 0.7344, Model 2 0.7520
+  VIF g_bl = 14.2; R^2 on study dummies = 0.252
+  VIF carbon_12h = 3.0; R^2 on study dummies = 0.858
 
 == 4b. Platform-separated sensitivity (v2) ==
   RNA-seq: 213 samples, 7 studies; microarray: 94 samples, 4 studies
   RNA-seq hardware x flight:
   microarray hardware x flight:
-  RNA-seq genes after filterByExpr: 23531
+  RNA-seq genes after filterByExpr: 24774
   microarray genes: 21112; value range 0.2-13.9 (log2)
-  rho: RNA-seq M1 0.707 M2 0.729; array M1 0.821 M2 0.823
-  RNA-seq Model 2 columns: X.Intercept., flightFLT, g_bl, carbon_12h, organ_simpleroot, organ_simplewhole_seedling, lightdark, lightred_light, lightunspecified, ecotype_simpleWS, ecotype_simpleother
-  array   Model 2 columns: X.Intercept., flightFLT, g_bl, organ_simpleroot, organ_simpleshoot, organ_simpleundifferentiated.cell.culture, organ_simplewhole_seedling, ecotype_simpleWS
+  rho: RNA-seq M1 0.658 M2 0.691; array M1 0.821 M2 0.824
+  RNA-seq Model 2 columns: X.Intercept., flightFLT, g_bl, carbon_12h, organ_simpleroot, organ_simplewhole_seedling, lightdark, lightunspecified, ecotype_simpleWS, ecotype_simpleother
+  array   Model 2 columns: X.Intercept., flightFLT, g_bl, carbon_12h, organ_simpleroot, organ_simpleshoot, organ_simpleundifferentiated.cell.culture, organ_simplewhole_seedling, ecotype_simpleWS
 
 R version 4.6.1 (2026-06-24)
 Platform: aarch64-apple-darwin25.4.0

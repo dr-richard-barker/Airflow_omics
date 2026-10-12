@@ -11,8 +11,8 @@ OSD-7|root	OSD-7	root	microarray	BRIC	5	5	118
 OSD-7|shoot	OSD-7	shoot	microarray	BRIC	5	5	12
 OSD-7|whole_seedling	OSD-7	whole_seedling	microarray	BRIC	3	3	0
 OSD-120|root	OSD-120	root	RNAseq	CARA	18	18	328
+OSD-314|whole_seedling	OSD-314	whole_seedling	RNAseq	EMCS	11	6	6455
 OSD-217|leaf	OSD-217	leaf	RNAseq	VEGGIE	3	3	13827
 OSD-217|root	OSD-217	root	RNAseq	VEGGIE	3	3	15030
-OSD-314|whole_seedling	OSD-314	whole_seedling	RNAseq	VEGGIE	11	6	6455
 OSD-678|leaf	OSD-678	leaf	RNAseq	VEGGIE	6	6	7
 OSD-678|whole_seedling	OSD-678	whole_seedling	RNAseq	VEGGIE	12	12	4633

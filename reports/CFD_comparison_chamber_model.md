@@ -22,7 +22,7 @@
      - **Consequence:** the Earth-equivalent fan speed (the airflow that restores Earth-level surface gradients in µg) is **2.0 cm/s for a leaf, not 2.8**, and **≈ 6.5 cm/s for a rosette, not 11**. At the VEGGIE setting (8.3 cm/s) the old snapshot understated the leaf's g_bl by 17 % (1.525 vs a steady 1.841).
   3. **The grid is not the limiting error at 0 g.** A three-level resolution ladder (dx 0.288 → 0.144 mm) converges monotonically. The production grid is within 2.0 % (0 g) and 5.5 % (1 g) of the extrapolated g_bl, and the Earth/µg contrast moves from 2.25× to 2.19× (§3.3).
   4. **The fix exposed a solver limit.** With the fan now carrying its full flow, air squeezing between rosette leaves and canopy shoots exceeds the lattice-Boltzmann low-Mach limit (Ma > 0.3) at the faster fan speeds, and three runs blew up. Excluding those runs, **the canopy never reaches its Earth level** within the valid range (≤ 6.6 cm/s). The old "≈ 21 cm/s" canopy figure came from extrapolating past the data. A canopy answer at higher speeds needs a finer lattice.
-  5. **Follow-up (§3.6): the 0 g conductance depends on the modelled chamber, and the omics CFD statistics do not survive study structure.** Doubling the chamber lowers 0 g g_bl by 33 % (leaf) and 41 % (rosette) with no plateau, while 1 g moves ≤ 7 %. In this package, g_bl is a relabelling of flight × organ; a within-study model finds no pathway with an FDR-significant flight, scale or interaction term, and a meta-regression's single hit (1/28 pathways, a VEGGIE-versus-sealed-hardware difference) does not survive correct pathway scoring (0/28; REANALYSIS §11).
+  5. **Follow-up (§3.6): the 0 g conductance depends on the modelled chamber, and the omics CFD statistics do not survive study structure.** Doubling the chamber lowers 0 g g_bl by 33 % (leaf) and 41 % (rosette) with no plateau, while 1 g moves ≤ 7 %. In this package, g_bl is a relabelling of flight × organ; a within-study model finds no pathway with an FDR-significant flight term (on correctly rescored pathways three show a scale difference; REANALYSIS §10), and a meta-regression finds no dose-response on correctly scored pathways (0/28; REANALYSIS §11).
 
 ## 2. How the two models compare
 
@@ -167,7 +167,7 @@ A key visualization standard is to compute one colour range over all frames and 
 **Not regenerated:**
 - **T3 / T5:** need the raw Vernier data (`validation/raw/`), which is not on this machine. The T5 ppm values for µg will rise.
 - **T12:** transcribed by hand from console output.
-- **The slide deck:** `CFD_Spaceflight_Botany.pptx`/`.pdf` was made by hand and still shows the old numbers. (The paper text — `MANUSCRIPT.md`, `manuscript.tex`, `DISCUSSION.md` and the `.docx` — has since been updated, with a TODO on T5; reference 5 was corrected in LunarLeaf PR #7.)
+- **The slide deck:** `CFD_Spaceflight_Botany.pptx`/`.pdf` was made by hand and still shows the old numbers. (The paper text — `results/MANUSCRIPT.md`, `results/manuscript/manuscript.tex`, `results/DISCUSSION.md` and the `.docx` — has since been updated, with a TODO on T5; reference 5 was corrected in LunarLeaf PR #7.)
 - **The omics outputs downstream of `extract_cfd.py`:** since refit locally from the OSDR processed files (REANALYSIS §9–§12).
 
 ### 3.6 Follow-up analyses (2026-10-08)
@@ -204,20 +204,20 @@ Consequences:
 **Pathway-level reanalysis of this package (`code/cfd_covariates/cfd_reanalysis.py`, `code/cfd_covariates/cfd_meta_regression.py`; full write-up in `tables/reanalysis_2026-10/REANALYSIS.md`).**
 
 - **Covariates.** These were rebuilt with `extract_cfd.py`'s own code. The old LunarLeaf tables reproduce 25/30 stored covariate columns exactly. The other five differ by design: the two fan columns, and carbon_12h, A_start and A_end, because BRIC ground controls now get the sealed-dish value. The new covariates are in `expression_metadata_with_cfd_v2.tsv`.
-- **Original method.** Pearson, n = 307, BH. It reproduces the stored correlations to 10⁻¹⁵, and still calls 28/28 pathways significant for g_bl with the new covariates.
-- **Identifiability.** g_bl takes exactly one value per gravity × scale cell (design rank 14 with or without it). It cannot be attributed separately from flight and organ.
-- **Within-study model.** The model is `score ~ study + flight × scale`, with effect coding, cluster-robust SEs by study (11 studies) and BH. **0/28 pathways** have an FDR-significant flight, scale or interaction term.
+- **Original method.** Pearson, n = 307 (290 with the v2 covariates, which EMCS lacks), BH. It reproduces the stored correlations to 10⁻¹⁵, and still calls 28/28 pathways significant for g_bl with the new covariates.
+- **Identifiability.** g_bl takes exactly one value per gravity × scale cell, so adding it does not raise the design rank (REANALYSIS §4). It cannot be attributed separately from flight and organ.
+- **Within-study model.** The model is `score ~ study + flight × scale`, with effect coding, cluster-robust SEs by study (11 studies) and BH. **0/28 pathways** have an FDR-significant flight, scale or interaction term on the stored scores (rescored: 0/28 flight, 3/28 scale; REANALYSIS §10).
   - Positive control: a planted 0.25 SD flight effect is detected in 28/28 on the stored scores. On correctly rescored pathways it is detected in only 8/28 (0.25 SD) and 15/28 (0.5 SD), so the null rules out only large effects (REANALYSIS §10).
   - The same model with naive SEs gives 7/28, so the original significance came from treating 307 clustered samples as independent.
 - **Meta-regression.** The question: does the predicted boundary-layer penalty explain which studies respond? It uses 14 study × scale units with Knapp–Hartung inference.
   - **1/28 pathways** (GA biosynthesis, p = 8 × 10⁻⁴).
   - That one signal is equally well explained by a VEGGIE-vs-other indicator, and shows no slope within BRIC alone. It is a hardware-associated difference, not a dose-response.
   - A DerSimonian–Laird z-test would have claimed 14/28; it is over-confident with this few units.
-  - On correctly rescored pathways the meta-regression finds 0/28; GA biosynthesis drops to FDR 0.094 (REANALYSIS §11).
+  - Updated 2026-10-12: with EMCS (OSD-314) excluded for lack of a CFD scenario, the stored-score result is 6/28 on 13 units; on correctly rescored pathways it is 0/28, with GA biosynthesis at FDR 0.11 (REANALYSIS §8, §11).
 - **Gene-level checks (stored DE tables).**
   - `Flight_FLT_vs_GC` equals the BRIC-only contrast for all 25,453 genes.
   - The g_bl |logFC| > 1 count drops from 3,633 to 813 when expressed per SD.
-  - The limma models have since been refit from the 11 OSDR processed files (REANALYSIS §9–§10). Neither CFD covariate is identifiable from study and hardware, and a flight effect common to all studies explains only 0.3–0.6 % of gene variance; the flight response is mostly study-specific (§12).
+  - The limma models have since been refit from the 11 OSDR processed files (REANALYSIS §9–§10). Neither CFD covariate is identifiable from study and hardware, and a flight effect common to all studies explains only 0.3 % of gene variance (under 0.01 % in RNA-seq alone); the flight response is mostly study-specific (§12).
 
 **Real dish geometry (LunarLeaf T19, F14).** The chamber-size result meant the hardware scenes needed real dimensions. The dishes were rebuilt as their actual cross-sections, from dimensions supplied by R. Barker:
 - BRIC 60 mm round: 53 mm wide, ≈ 7.4 mm of air above ≈ 5.6 mm of agar.
@@ -232,10 +232,12 @@ Consequences:
 | CARA dish, taped | 0.247 | 0.170 | 1.45× |
 | BRIC dish, sealed (vs dish air) | 0.330* | 0.185 | 1.78×* |
 
+The open and taped rows are conductance to cabin air; the sealed BRIC row is to the dish's own air. The omics covariates and the 2026-10-12 figures use conductance to each dish's own air, which for the taped CARA dish is 0.263 / 0.186 (1.41×).
+
 - **The dish is boundary-layer-limited even on Earth.** With so little headspace, convection barely develops at 1 g. The likely main reason is that the agar under the leaf does not exchange gas (not isolated by a separate run). So the gravity penalty in a dish is 1.25–1.8×, smaller than the open box's 2.25×. That fits the reanalysis finding no robust flight effect tied to g_bl.
 - **At 0 g, BRIC and CARA give nearly the same leaf conductance to their own air** (0.185 vs 0.186). The hardware difference is in the dish atmosphere (sealed BRIC keeps depleting) rather than in the boundary layer.
 - **Headspace sensitivity** (min–max): −18 % / +5 % for BRIC and ±6 % for CARA.
-- **Fed into the omics covariates as separate columns.** `extract_cfd.py` adds `g_bl_dish` for the 112 BRIC/CARA leaf samples (5 studies), keeping `g_bl` unchanged. Overwriting `g_bl` would mix dish and open-box geometries and reverse the leaf/rosette order. The predicted in-dish penalty (1 g − 0 g) is 0.145 for BRIC (indicative) and 0.077 for CARA, against 0.554 in the open box. It is still one value per hardware × flight cell, so it adds no identifiable covariate (REANALYSIS.md §7). The flight effect on this subset is FDR-significant in 0/28 pathways on the stored scores (1/28, auxin_biosynthesis, on rescored scores; §11). A CARA-vs-BRIC difference is not testable, because CARA is a single study and cluster-robust errors collapse for a one-cluster term.
+- **Fed into the omics covariates as separate columns.** `extract_cfd.py` adds `g_bl_dish` for the BRIC/CARA leaf-scale samples (97 since 2026-10-12, when the unsealed OSD-7 ground controls were removed; 5 studies), keeping `g_bl` unchanged. Overwriting `g_bl` would mix dish and open-box geometries and reverse the leaf/rosette order. The predicted in-dish penalty (1 g − 0 g) is 0.145 for BRIC (indicative) and 0.077 for CARA, against 0.554 in the open box. It is still one value per hardware × flight cell, so it adds no identifiable covariate (REANALYSIS.md §7). The flight effect on this subset is FDR-significant in 0/28 pathways on the stored scores (1/28, ethylene_signaling, on rescored scores; §11). A CARA-vs-BRIC difference is not testable, because CARA is a single study and cluster-robust errors collapse for a one-cluster term.
 - \*The sealed 1 g case is not steady (3.8 % drift) and its depleted air exceeds the Boussinesq limit.
 - **Other caveats:**
   - The 2.3 mm (inflated) blade fills about 30 % of the BRIC headspace, and real seedlings are smaller.
@@ -256,7 +258,7 @@ Consequences:
 - **The 0 g conductance is well defined** (constant 0.187, matching T19). The 1 g value rose to ≈ 0.40 while photosynthesis was active, but see the correction below: that plateau needs unbounded humidity.
 - **The buoyancy fix alone barely changes the earlier 1 g value** (0.327 vs 0.330 at 26 s).
 - **CARA (taped) keeps assimilation at 94–96 %.**
-- **Implication for the omics covariates (applied 2026-10-08).** BRIC ground controls use the same sealed hardware (confirmed by R. Barker), so they starve as fast as the flight samples. `extract_cfd.py` now gives BRIC ground controls T11's BRIC value (1 %) instead of 100 %. BRIC's carbon deficit is a hardware effect shared by flight and ground, and cancels in FLT − GC. With the fix, `carbon_12h_pct_earth` is a BRIC-vs-other label, so its pathway correlations (max |r| 0.29 → 0.59) now measure differences between studies, not flight. The within-study results are unchanged (0/28). CARA/VEGGIE ground-control hardware is not yet confirmed (TODO).
+- **Implication for the omics covariates (applied 2026-10-08).** BRIC ground controls use the same sealed hardware (confirmed by R. Barker), so they starve as fast as the flight samples. `extract_cfd.py` now gives BRIC ground controls T11's BRIC value (1 %) instead of 100 %. BRIC's carbon deficit is a hardware effect shared by flight and ground, and cancels in FLT − GC. With the fix, `carbon_12h_pct_earth` is mostly a sealed-vs-other hardware label (it also varies between flight and ground within OSD-7 and OSD-120), so its pathway correlations (REANALYSIS §3) now measure differences between studies, not flight. The within-study results are unchanged (0/28). Confirmed 2026-10-12: CARA and VEGGIE ground controls grew in the KSC ISSES chamber and keep 100 %; APEX-TAGES (OSD-7) ground controls were not sealed and keep 100 % too.
 
 **What drives the 1 g conductance, and a correction to T20 (LunarLeaf T21, T22, F16, F17).** Diagnostic runs separated the two candidate explanations for T20's 1 g rise:
 - **The rise at 0.5–1 min is convection onset.** It appears equally with fixed uptake.
@@ -315,13 +317,13 @@ The option is flagged as unsafe at 1 g. Wet agar at 1 g needs a calibrated humid
 ## 6. Side findings in this omics package (flagged, not changed)
 
 - **g_bl has only 4 distinct values** (leaf/rosette × 1 g/0 g; now 0.997 / 0.443 / 0.540 / 0.272) across 307 samples. Its Pearson correlations (n = 307, `hormone_carbon_model.py`) are really a flight × organ contrast with inflated p-values. Confirmed in §3.6: none survives a within-study model with clustering by study.
-- **The README says 16 studies; the data contain 11** (307 samples).
+- **The README said 16 studies; the data contain 11** (307 samples). Fixed in the 2026-10-12 README.
 - **`Flight_FLT_vs_GC` is the flight effect within BRIC**, the reference level, not the flight main effect. That is why it is identical to `Flight_BRIC_FLT_vs_GC` (476/264).
 - **|logFC| > 1 for continuous covariates depends on units** (per 1 mol m⁻² s⁻¹ of g_bl).
-- **Hardware is confounded with study.** CARA comes from OSD-120 alone, VEGGIE includes EMCS data relabelled (OSD-314), and BRIC includes the APEX-TAGES study OSD-7.
+- **Hardware is confounded with study.** CARA comes from OSD-120 alone. Since 2026-10-12, EMCS (OSD-314) is its own class without CFD covariates, and APEX-TAGES (OSD-7) flight samples share the BRIC scenario while its unsealed ground controls keep 100 % carbon.
 - **fig6 B/C show identical bars across hardware**, because g_bl does not depend on hardware in T13.
 - **Roots are assigned leaf-scale g_bl.**
-- **Reproducibility:** hard-coded `/mnt/shared-workspace` and `/workspace` paths (only the LunarLeaf table path can now be overridden); no `requirements.txt` or `sessionInfo`; LunarLeaf commit not pinned; `CITATION.cff` ORCID is a placeholder.
+- **Reproducibility:** hard-coded `/mnt/shared-workspace` and `/workspace` paths (only the LunarLeaf table path can now be overridden); no `requirements.txt` or `sessionInfo`; LunarLeaf commit not pinned; `CITATION.cff` ORCID is a placeholder. Since 2026-10-12 the README lists the run order and requirements, and the refit logs record `sessionInfo()`.
 
 ## 7. Reproduce
 

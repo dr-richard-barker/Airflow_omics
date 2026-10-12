@@ -87,11 +87,13 @@ def main():
         "",
         f"- Per-pathway flight t-statistics (§5) correlate at r = {r_t:.2f} between stored and rescored scores; "
         f"meta-regression slopes (§8) at r = {r_slope:.2f}.",
-        f"- §8's one stored hit, {top_s.pathway} (Knapp–Hartung p = {top_s.p_value:.2g}), has p = {row_r.p_value:.2g} "
-        f"(FDR = {row_r.fdr:.2g}) on the rescored scores. Its stored score repeats {n_rep} gene(s) in its set and "
-        "includes zero-filled genes, "
-        + ("but the signal survives rescoring." if survives else
-           "and the VEGGIE-vs-sealed-hardware signal reported in §8 does not survive correct scoring."),
+        f"- §8 on the stored scores finds {int((mr['stored'].fdr < 0.05).sum())} pathway(s) at FDR < 0.05; "
+        f"{int(((mr['stored'].fdr < 0.05) & (mr['stored'].set_index('pathway').reindex(mr['stored'].pathway).index.isin(mr['rescored'][mr['rescored'].fdr < 0.05].pathway))).sum())} "
+        f"remain significant on the rescored scores. The strongest, {top_s.pathway} (Knapp–Hartung p = {top_s.p_value:.2g}), has "
+        f"p = {row_r.p_value:.2g} (FDR = {row_r.fdr:.2g}) on the rescored scores; its stored score repeats {n_rep} gene(s) in its set "
+        "and includes zero-filled genes. "
+        + ("Its signal survives rescoring." if survives else
+           "The stored-score meta-regression hits do not survive correct scoring."),
         f"- The rescored scores show a scale (rosette vs leaf) difference in {n_scale} pathway(s), consistent with "
         "organ composition once study and platform scale differences are removed.",
         "- **Reading:** on correctly scored pathways, "

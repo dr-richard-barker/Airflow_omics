@@ -8,7 +8,7 @@
 # with mean ~0 %; no residual, g_bl or carbon_12h rows). Here every categorical
 # factor is a random effect, as the variancePartition authors recommend, and the
 # continuous CFD covariates are left out because they are functions of
-# hardware x flight x scale (§4). Hardware is nested in study (each study used one
+# hardware x flight x scale (§4). Study is nested in hardware (each study used one
 # hardware), so both enter as nested components.
 #
 #   ~ (1|cfd_hardware) + (1|osd_id) + (1|flight) + (1|flight:cfd_hardware)
@@ -125,7 +125,7 @@ sec <- c(
           summ[data == "rnaseq" & component == "flight"]$genes_over_10pct, format(nrow(d_rna), big.mark = ","),
           format(summ[data == "pooled_complete" & component == "flight:osd_id"]$genes_over_10pct, big.mark = ","),
           format(summ[data == "rnaseq" & component == "flight:osd_id"]$genes_over_10pct, big.mark = ",")),
-  "- Hardware and flight × hardware are estimated from only 3 hardware groups, so their split from the study components is imprecise; read study + hardware, and the three flight terms, as totals.",
+  sprintf("- Hardware and flight × hardware are estimated from only %d hardware groups, so their split from the study components is imprecise; read study + hardware, and the three flight terms, as totals.", nlevels(droplevels(m2$cfd_hardware))),
   "")
 rpath <- "tables/reanalysis_2026-10/REANALYSIS.md"
 txt <- paste(readLines(rpath), collapse = "\n")

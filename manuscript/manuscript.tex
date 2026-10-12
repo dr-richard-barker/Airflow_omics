@@ -54,7 +54,7 @@ $^{2}$virtual-root Systems Biology Project \\
 
 % ============================================================
 \begin{abstract}
-Spaceflight transcriptome studies of \textit{Arabidopsis} differ in hardware, tissue, platform and flight, and their results rarely agree. We re-analysed 307 samples from 11 NASA Open Science Data Repository (OSDR) studies with study-aware models, and coupled them to lattice-Boltzmann computational fluid dynamics (CFD) of the BRIC, CARA and VEGGIE growth hardware. A flight response shared by all studies explained under 1\% of gene variance (0.3\% pooled, 0.6\% in RNA-seq alone), against 8--12\% for study-specific flight effects. Within BRIC, flight signatures agreed between the RNA-seq studies (median $r = 0.40$) but not with the earlier microarray studies, which detected almost no flight response. CFD-predicted boundary-layer conductance and carbon supply were confounded with study and did not explain which studies responded: no pathway showed a flight effect or a CFD dose-response in study-aware models. Consistent with this, the CFD shows that inside the flight dishes gravity changes leaf gas exchange only 1.25--1.8-fold, against 2.25-fold in open air, and that sealed BRIC dishes become carbon-limited on the ground as well as in orbit. Spaceflight responses are real but largely experiment-specific, which argues for replicated flights in common hardware rather than pooled meta-analysis.
+Spaceflight transcriptome studies of \textit{Arabidopsis} differ in hardware, tissue, platform and flight, and their results rarely agree. We re-analysed 307 samples from 11 NASA Open Science Data Repository (OSDR) studies with study-aware models, and coupled them to lattice-Boltzmann computational fluid dynamics (CFD) of the BRIC, CARA and VEGGIE growth hardware. A flight response shared by all studies explained under 1\% of gene variance (0.3\% pooled, under 0.01\% in RNA-seq alone), against 7--11\% for study-specific flight effects. Within BRIC, flight signatures agreed between the RNA-seq studies (median $r = 0.40$) but not with the earlier microarray studies, which detected almost no flight response. CFD-predicted boundary-layer conductance and carbon supply were confounded with study and did not explain which studies responded: in study-aware models across all studies, no pathway showed a flight effect or a CFD dose-response. Consistent with this, the CFD shows that inside the flight dishes gravity changes leaf gas exchange only about 1.4--1.8-fold, against 2.25-fold in open air, and that sealed BRIC dishes become carbon-limited on the ground as well as in orbit. Spaceflight responses are real but largely experiment-specific, which argues for replicated flights in common hardware rather than pooled meta-analysis.
 \end{abstract}
 
 \textbf{Keywords:} spaceflight, \textit{Arabidopsis}, transcriptomics, meta-analysis, study heterogeneity, computational fluid dynamics, boundary layer, NASA OSDR
@@ -62,7 +62,7 @@ Spaceflight transcriptome studies of \textit{Arabidopsis} differ in hardware, ti
 % ============================================================
 \section*{Introduction}
 
-Spaceflight alters gene expression in \textit{Arabidopsis}, and the NASA OSDR now holds transcriptomes from many flight experiments \citep{paul2017}. These experiments used different growth hardware: sealed Petri-dish canisters (BRIC), semi-permeable dishes (CARA) and vented chambers with forced airflow (VEGGIE). They also differ in tissue, ecotype, lighting, plant age and measurement platform. Pooling them promises statistical power, but only if a common flight response exists to be found.
+Spaceflight alters gene expression in \textit{Arabidopsis} \citep{paul2017}, and the NASA OSDR now holds transcriptomes from many flight experiments. These experiments used different growth hardware: sealed Petri-dish canisters (BRIC), semi-permeable dishes (CARA) and vented chambers with forced airflow (VEGGIE). They also differ in tissue, ecotype, lighting, plant age and measurement platform. Pooling them promises statistical power, but only if a common flight response exists to be found.
 
 Growth hardware also sets the atmosphere around the plant. In microgravity buoyant convection is lost, so air movement around a leaf depends on ventilation, and forced airflow can restore gas exchange \citep{kitaya2003,monje2005}. If hardware-dependent gas exchange shaped the flight response, quantities predicted by CFD of each hardware, such as the leaf boundary-layer conductance $g_{bl}$, should explain which experiments respond and how strongly.
 
@@ -73,23 +73,23 @@ We asked three questions. (1) How much of the transcriptional variation in poole
 
 \subsection*{Data and harmonisation}
 
-We analysed 307 expression samples (153 flight, 154 ground control) from 11 OSDR studies: 213 RNA-seq samples from 7 studies and 94 microarray samples from 4 studies (Fig.~\ref{fig:design}). Studies were grouped into three CFD hardware classes: BRIC, CARA and VEGGIE. Two other systems were folded into these classes: APEX-TAGES (OSD-7) into BRIC, and EMCS (OSD-314) into VEGGIE. CARA is represented by a single study (OSD-120).
+We analysed 307 expression samples (153 flight, 154 ground control) from 11 OSDR studies: 213 RNA-seq samples from 7 studies and 94 microarray samples from 4 studies (Fig.~\ref{fig:design}). Studies were grouped into four hardware classes: BRIC, CARA, VEGGIE and EMCS. APEX-TAGES (OSD-7) flight samples were grouped with BRIC, but its ground controls were not sealed; EMCS (OSD-314) has no CFD scenario, so it enters the expression analyses but not the CFD analyses. BRIC ground controls used the sealed flight hardware, and CARA and VEGGIE ground controls were grown in the ISS Environmental Simulator chamber at Kennedy Space Center. CARA is represented by a single study (OSD-120).
 
 We rebuilt the harmonised expression matrix from the 11 OSDR processed files and reproduced the original limma-voom fit: 25,453 genes, inter-study correlation 0.7327 against 0.7324, and $t$-statistic correlation 0.999. The original pipeline joined the platforms on gene identifiers and set genes not measured in a study to zero. We therefore repeated the main analyses without zero-filling, and with RNA-seq and microarray modelled separately (Methods).
 
 \subsection*{The flight response is largely study-specific}
 
-We partitioned each gene's variance with every factor as a random effect and hardware nested in study (Fig.~\ref{fig:vp}).
+We partitioned each gene's variance with every factor as a random effect and study nested in hardware (Fig.~\ref{fig:vp}).
 \begin{itemize}
-    \item \textbf{Study} explained 53.3\% of the average gene's variance in the pooled data (17,129 genes measured in all studies) and 44.8\% in the RNA-seq studies alone (23,531 genes).
-    \item \textbf{A flight effect common to all studies} explained 0.3\% and 0.6\%.
-    \item \textbf{Study-specific flight effects} explained 8.3\% and 11.9\%.
+    \item \textbf{Study} explained 52.9\% of the average gene's variance in the pooled data (17,129 genes measured in all studies) and 44.3\% in the RNA-seq studies alone (24,774 genes).
+    \item \textbf{A flight effect common to all studies} explained 0.3\% and under 0.01\%.
+    \item \textbf{Study-specific flight effects} explained 7.1\% and 11.0\%, and hardware-specific flight effects 4.4\% and 4.2\%.
 \end{itemize}
-Only 10 of 17,129 genes (71 of 23,531 in RNA-seq) had more than 10\% of their variance in the common flight effect, against 4,597 and 8,899 in flight $\times$ study. Spaceflight changes expression substantially within experiments, but mostly in ways that differ between them.
+Only 7 of 17,129 genes (none of 24,774 in RNA-seq) had more than 10\% of their variance in the common flight effect, against 3,889 and 8,848 in flight $\times$ study. Spaceflight changes expression substantially within experiments, but mostly in ways that differ between them.
 
 \subsection*{Pooled flight contrasts depend on the reference hardware}
 
-In a factorial limma-voom model ($\sim$ flight $\times$ hardware + organ + light + ecotype, with study as a correlated block), the default flight coefficient is the flight effect in the reference hardware, BRIC: 11,675 genes at FDR $< 0.05$. The flight effect averaged over BRIC, CARA and VEGGIE involved 4,598 genes (285 with $|\log_2\mathrm{FC}| > 1$), and the two estimates agreed only weakly across genes ($r = 0.35$). Restricting to genes measured in every study changed these counts little (10,831 and 3,637). Which hardware is taken as the reference therefore largely determines what a pooled ``flight effect'' contains.
+In a factorial limma-voom model ($\sim$ flight $\times$ hardware + organ + light + ecotype, with study as a correlated block), the default flight coefficient is the flight effect in the reference hardware, BRIC: 11,797 genes at FDR $< 0.05$. The flight effect averaged over the four hardware classes involved 2,981 genes (254 with $|\log_2\mathrm{FC}| > 1$), and the two estimates agreed only weakly across genes ($r = 0.21$). Restricting to genes measured in every study gave 10,915 and 2,361 genes. Which hardware is taken as the reference therefore largely determines what a pooled ``flight effect'' contains.
 
 \subsection*{Flight signatures replicate between BRIC RNA-seq studies, not with microarray studies}
 
@@ -97,23 +97,23 @@ Within BRIC, the RNA-seq and microarray flight effects were uncorrelated ($r = -
 \begin{itemize}
     \item The three BRIC RNA-seq studies agreed with one another (median $r = 0.40$).
     \item The BRIC microarray studies agreed neither with each other (median $r = 0.01$) nor with the RNA-seq studies ($-0.03$; whole seedlings only, $-0.04$).
-    \item The microarray units detected a median of 5.5 flight genes at FDR $< 0.05$, against 7,381 in the BRIC RNA-seq units.
+    \item The microarray units detected a median of 5.5 flight genes at FDR $< 0.05$, against a median of 7,381 in the BRIC RNA-seq units.
 \end{itemize}
-The platform split is therefore weak or absent flight signal in the microarray studies, not an opposite response. These are the earlier BRIC flights, so platform and flight era cannot be separated. Across hardware, even RNA-seq studies agreed poorly (median $r = 0.09$).
+The platform split is therefore weak or absent flight signal in the microarray studies, not an opposite response. These are the earlier flights (BRIC, and APEX-TAGES for OSD-7), so platform and flight era cannot be separated. Across hardware, even RNA-seq studies agreed poorly (median $r = 0.09$).
 
 \subsection*{CFD covariates do not explain which studies respond}
 
-Each CFD covariate takes one value per hardware $\times$ gravity $\times$ organ-scale cell, so neither can be separated from study.
+Each CFD covariate is set by hardware class, gravity, organ scale and ground-control enclosure, so neither covariate can be separated from study.
 \begin{itemize}
-    \item \textbf{$g_{bl}$} relabels the flight $\times$ organ-scale cells (variance inflation factor 13.6).
-    \item \textbf{Carbon supply} is a hardware label once BRIC ground controls are given the sealed-dish value: study membership explains 99.9\% of its variance.
+    \item \textbf{$g_{bl}$} relabels the flight $\times$ organ-scale cells (variance inflation factor 14.2).
+    \item \textbf{Carbon supply} is a hardware label once BRIC ground controls are given the sealed-dish value: study membership explains 86\% of its variance, and it varies within only two studies, OSD-7 (unsealed ground controls) and OSD-120 (CARA), where it coincides with the flight contrast.
 \end{itemize}
 
 At the pathway level, we scored 28 curated pathways within each study on each platform's own log scale. These scores avoid zero-filling and count each gene once. We then fitted a within-study model with cluster-robust standard errors by study.
 \begin{itemize}
-    \item \textbf{Flight:} no pathway showed a flight effect at FDR $< 0.05$ (Fig.~\ref{fig:pathways}).
+    \item \textbf{Flight:} no pathway showed a flight effect at FDR $< 0.05$ (Fig.~\ref{fig:pathways}); three confidence intervals exclude zero before multiple-testing correction. A model restricted to the five studies with in-dish covariates flagged one pathway (ethylene signalling, 4 residual degrees of freedom), which the all-study model does not replicate.
     \item \textbf{Organ scale:} three pathways differed between rosette and leaf scale: ethylene biosynthesis, jasmonate signalling and gravitropism signalling.
-    \item \textbf{CFD dose-response:} a meta-regression of study-level flight effects on the CFD-predicted boundary-layer penalty (14 study $\times$ scale units, Knapp--Hartung inference) found no pathway at FDR $< 0.05$.
+    \item \textbf{CFD dose-response:} a meta-regression of study-level flight effects on the CFD-predicted boundary-layer penalty (13 study $\times$ scale units, Knapp--Hartung inference; EMCS has no CFD penalty) found no pathway at FDR $< 0.05$.
     \item \textbf{Power:} a planted flight effect of 0.25 or 0.5 within-study SD was detected in 8/28 and 15/28 pathways, so these tests rule out only large effects.
 \end{itemize}
 
@@ -122,7 +122,7 @@ At the pathway level, we scored 28 curated pathways within each study on each pl
 LunarLeaf-CFD resolves the leaf boundary layer at 0.288~mm in two dimensions, with buoyancy driven by CO\textsubscript{2}, O\textsubscript{2} and H\textsubscript{2}O concentration differences (Fig.~\ref{fig:cfd}).
 \begin{itemize}
     \item \textbf{Open box:} a leaf's $g_{bl}$ falls from 0.997 at 1\,g to 0.443\,mol\,m\textsuperscript{-2}\,s\textsuperscript{-1} at 0\,g, a 2.25-fold penalty (LunarLeaf-CFD T13).
-    \item \textbf{Real dishes:} inside the BRIC 60\,mm and CARA 120\,mm dishes, the shallow headspace keeps convection weak even at 1\,g, and the penalty shrinks to 1.25--1.8-fold (T19).
+    \item \textbf{Real dishes:} inside the BRIC 60\,mm and CARA 120\,mm dishes, the shallow headspace keeps convection weak even at 1\,g, and the penalty shrinks to 1.4-fold in the taped CARA dish and about 1.8-fold in the sealed BRIC dish, whose 1\,g value is indicative only (T19).
     \item \textbf{At 0\,g:} both dishes give nearly the same conductance to their own air (0.185 and 0.186).
     \item \textbf{Sealed BRIC dish:} with photosynthesis feedback, it runs out of CO\textsubscript{2} in about 3.5\,min at either gravity (T20). With humidity-limited transpiration, its 1\,g and 0\,g boundary layers converge within minutes (T22).
 \end{itemize}
@@ -135,7 +135,7 @@ The original pipeline also deconvolved the bulk samples against the Shahan root 
 % ============================================================
 \section*{Discussion}
 
-The pooled OSDR data contain a large flight response within experiments but very little that is shared between them. A flight effect common to all studies explains under 1\% of gene variance, against 8--12\% for study-specific flight effects. Pooled contrasts are therefore fragile: the default ``flight effect'' of a factorial model is the effect in the reference hardware, and an estimate averaged over hardware differs substantially. Within one hardware, the RNA-seq studies do share a flight signature. This suggests that common biology exists, but is masked by differences in hardware, tissue, platform and flight.
+The pooled OSDR data contain a large flight response within experiments but very little that is shared between them. A flight effect common to all studies explains under 1\% of gene variance, against 7--11\% for study-specific flight effects. Pooled contrasts are therefore fragile: the default ``flight effect'' of a factorial model is the effect in the reference hardware, and an estimate averaged over hardware differs substantially. Within one hardware, the RNA-seq studies do share a flight signature. This suggests that common biology exists, but is masked by differences in hardware, tissue, platform and flight.
 
 The microarray studies contribute almost no flight signal. Whether this reflects the platform or the earlier flights cannot be decided with these data, but it means that pooling the two platforms dilutes rather than strengthens a flight signature.
 
@@ -143,8 +143,8 @@ The CFD covariates did not explain which studies respond. With so few independen
 
 \textbf{Limitations.}
 \begin{itemize}
-    \item Hardware is nested in study, and CARA is a single study.
-    \item APEX-TAGES and EMCS were folded into the BRIC and VEGGIE classes.
+    \item Study is nested in hardware, and CARA is a single study.
+    \item APEX-TAGES flight samples share the BRIC CFD scenario, and EMCS has none.
     \item The positive controls show that the pathway tests can rule out only large effects.
     \item The CFD is two-dimensional, its humidity saturation level is an estimate, and it is not yet validated against in-flight measurements.
 \end{itemize}
@@ -154,7 +154,7 @@ The CFD covariates did not explain which studies respond. With so few independen
 
 \subsection*{Data}
 
-Processed expression files for 11 OSDR studies were downloaded from the OSDR biodata API. For the 7 RNA-seq studies these were the GeneLab normalised counts and RSEM expected counts; for the 4 microarray studies, the normalised probe-set intensities. A manifest with source URLs and SHA-256 checksums accompanies the code. Sample metadata (ecotype, organ, flight, light, hardware) follows the original OSDR harmonisation; organ was mapped to leaf or rosette CFD scale.
+Processed expression files for 11 OSDR studies were downloaded from the OSDR biodata API. For the 7 RNA-seq studies these were the GeneLab normalised counts and RSEM expected counts; for the 4 microarray studies, the normalised probe-set intensities. A manifest with source URLs and SHA-256 checksums is kept with the downloaded data (outside the repository). Sample metadata (ecotype, organ, flight, light, hardware) follows the original OSDR harmonisation; organ was mapped to leaf or rosette CFD scale.
 
 \subsection*{Harmonisation}
 
@@ -175,7 +175,7 @@ False discovery rates used the Benjamini--Hochberg procedure \citep{benjamini199
 
 \subsection*{Variance partitioning}
 
-Variance components were estimated per gene with variancePartition \citep{hoffman2016}, using the formula $\sim$ (1$|$hardware) + (1$|$study) + (1$|$flight) + (1$|$flight:hardware) + (1$|$flight:study) + (1$|$organ) + (1$|$light) + (1$|$ecotype). It was applied to voom-weighted complete-case data and to the RNA-seq studies alone. The CFD covariates were omitted, because their canonical correlation with study is 1.00.
+Variance components were estimated per gene with variancePartition \citep{hoffman2016}, using the formula $\sim$ (1$|$hardware) + (1$|$study) + (1$|$flight) + (1$|$flight:hardware) + (1$|$flight:study) + (1$|$organ) + (1$|$light) + (1$|$ecotype). It was applied to voom-weighted complete-case data and to the RNA-seq studies alone. The CFD covariates were omitted: they are set by hardware, gravity and scale and are confounded with study (canonical correlation with study 0.93 for carbon supply and 0.50 for $g_{bl}$; hardware itself 1.00).
 
 \subsection*{Platform concordance}
 
@@ -185,11 +185,11 @@ The flight effect was estimated separately in each study $\times$ organ unit wit
 
 The 28 curated gene sets were checked against UniProt. Repeated entries were removed, one misassigned gene was removed from the heat-shock set, and the heat-shock transcription factors and HSP101 were added. Scores were computed within each study as the mean within-study $z$-score of member genes. RNA-seq expression was taken as log\textsubscript{2} counts per million, and microarray as published log\textsubscript{2} intensities.
 
-Each pathway score was modelled as $\sim$ study + flight $\times$ scale, with effect coding. Standard errors were cluster-robust (CR1) by study \citep{cameron2015}, with $t$ tests on $G - 1$ degrees of freedom; terms identified within fewer than two studies were not tested. Study-level flight effects were meta-regressed on the CFD-predicted penalty with Knapp--Hartung inference \citep{knapp2003}. Positive controls added a known flight effect to every pathway and recorded detection.
+Each pathway score was modelled as $\sim$ study + flight $\times$ scale, with effect coding. Standard errors were cluster-robust (CR1) by study \citep{cameron2015}, with $t$ tests on $G - 1$ degrees of freedom; terms identified within fewer than two studies were not tested. Study-level flight effects were meta-regressed with Knapp--Hartung inference \citep{knapp2003} on the predicted penalty: the increase in the magnitude of the mean leaf-surface CO\textsubscript{2} gap from ground to flight in each study $\times$ scale unit (flight values from the LunarLeaf-CFD hardware scenes, T10, whose BRIC and CARA runs had not reached steady state; ground values from the open-box scene). Positive controls added a known flight effect to every pathway and recorded detection.
 
 \subsection*{CFD}
 
-Boundary-layer quantities come from LunarLeaf-CFD, a two-dimensional D2Q9 lattice-Boltzmann solver with D2Q5 transport of CO\textsubscript{2}, O\textsubscript{2} and H\textsubscript{2}O and concentration-driven buoyancy. Leaf and rosette scenes were run to steady state (T13). The real BRIC and CARA dish cross-sections were modelled with the leaf 1\,mm above the agar (T19). Sealed-dish runs added CO\textsubscript{2}-limited photosynthesis (T20) and humidity-limited transpiration (T22). Covariates were assigned per sample by hardware class, gravity (flight = 0\,g) and organ scale.
+Boundary-layer quantities come from LunarLeaf-CFD, a two-dimensional D2Q9 lattice-Boltzmann solver with D2Q5 transport of CO\textsubscript{2}, O\textsubscript{2} and H\textsubscript{2}O and concentration-driven buoyancy. Leaf and rosette scenes were run to steady state (T13). The real BRIC and CARA dish cross-sections were modelled with the leaf 1\,mm above the agar (T19). Sealed-dish runs added CO\textsubscript{2}-limited photosynthesis (T20) and humidity-limited transpiration (T22). Covariates were assigned per sample by hardware class, gravity (flight = 0\,g) and organ scale; APEX-TAGES ground controls, which were not sealed, take the unsealed carbon value, and EMCS samples have no CFD covariates.
 
 \subsection*{Code and data availability}
 
@@ -217,14 +217,14 @@ The author declares no competing interests.
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.9\textwidth]{figures/2026-10/fig1_study_design.png}
-\caption{\textbf{Study design.} Flight (solid) and ground-control (light) samples in each of the 11 OSDR studies, coloured by CFD hardware class and labelled by platform. APEX-TAGES (OSD-7) is grouped with BRIC and EMCS (OSD-314) with VEGGIE. Source: \texttt{expression\_metadata\_with\_cfd\_v2.tsv}.}
+\caption{\textbf{Study design.} Flight (solid) and ground-control (light) samples in each of the 11 OSDR studies, coloured by hardware class and labelled by platform. APEX-TAGES (OSD-7) flight samples are grouped with BRIC; EMCS (OSD-314) has no CFD scenario. Source: \texttt{expression\_metadata\_with\_cfd\_v2.tsv}.}
 \label{fig:design}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.9\textwidth]{figures/2026-10/fig2_variance_partition.png}
-\caption{\textbf{The flight response is largely study-specific.} Mean percent of each gene's variance explained by each component, for the pooled data (genes measured in all studies) and the RNA-seq studies alone. Every factor is a random effect; hardware is nested in study. Source: REANALYSIS §12.}
+\caption{\textbf{The flight response is largely study-specific.} Mean percent of each gene's variance explained by each component, for the pooled data (genes measured in all studies) and the RNA-seq studies alone. Every factor is a random effect; study is nested in hardware. Source: REANALYSIS §12.}
 \label{fig:vp}
 \end{figure}
 
@@ -238,7 +238,7 @@ The author declares no competing interests.
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.85\textwidth]{figures/2026-10/fig4_pathway_flight_effects.png}
-\caption{\textbf{No pathway-level flight effect.} Flight effect (flight minus ground) per pathway with 95\% confidence intervals, from a within-study model with cluster-robust errors by study (11 studies), on scores computed within each study without zero-filling. No pathway reaches FDR $< 0.05$. Source: REANALYSIS §10.}
+\caption{\textbf{No pathway-level flight effect.} Flight effect (flight minus ground) per pathway with 95\% confidence intervals, from a within-study model with cluster-robust errors by study (11 studies), on scores computed within each study without zero-filling. Intervals are not adjusted for multiple testing; no pathway reaches FDR $< 0.05$. Source: REANALYSIS §10.}
 \label{fig:pathways}
 \end{figure}
 

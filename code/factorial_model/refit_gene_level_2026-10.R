@@ -113,16 +113,19 @@ say("\n== 4. Refit, v2 covariates ==")
 m2 <- prep_meta(meta2)
 X1 <- drop_aliased(model.matrix(F1, m2))
 r1 <- fit_voom(dge, X1, m2$osd_id)
-X2 <- drop_aliased(model.matrix(F2, m2))
+# Model 2 needs the CFD covariates, which EMCS (OSD-314) does not have
+k2 <- cc_rows(m2, F2)
+X2 <- drop_aliased(model.matrix(F2, m2[k2, ]))
+say(sprintf("  Model 2: %d samples with CFD covariates (%d EMCS samples excluded)", sum(k2), sum(!k2)))
 say("  Model 2 design columns: ", paste(colnames(X2), collapse = ", "))
-r2 <- fit_voom(dge, X2, m2$osd_id)
+r2 <- fit_voom(dge[, k2], X2, m2$osd_id[k2])
 say(sprintf("  rho: Model 1 %.4f, Model 2 %.4f", r1$rho, r2$rho))
 
 # collinearity of the CFD covariates with study and hardware
 vif <- function(X, col) { o <- setdiff(colnames(X), c(col, "X.Intercept.")); 1 / (1 - summary(lm(X[, col] ~ X[, o]))$r.squared) }
 coll <- list()
 for (co in intersect(c("g_bl", "carbon_12h"), colnames(X2))) {
-  coll[[co]] <- c(vif = vif(X2, co), r2_study = summary(lm(X2[, co] ~ m2$osd_id))$r.squared)
+  coll[[co]] <- c(vif = vif(X2, co), r2_study = summary(lm(X2[, co] ~ droplevels(m2$osd_id[k2])))$r.squared)
   say(sprintf("  VIF %s = %.1f; R^2 on study dummies = %.3f", co, coll[[co]][["vif"]], coll[[co]][["r2_study"]]))
 }
 
@@ -161,6 +164,8 @@ fit_platform <- function(f, meta, fitter, data) {
     lab <- lab[!sapply(strsplit(lab, ":"), function(p) any(p %in% one))]
     f <- reformulate(lab)
   }
+  keep <- cc_rows(meta, f)   # e.g. EMCS has no CFD covariates
+  meta <- meta[keep, ]; data <- data[, keep]
   X <- drop_aliased(model.matrix(f, meta)); r <- fitter(data, X, meta$osd_id); r$X <- X; r
 }
 rr1 <- fit_platform(F1, mr, fit_voom, dr)
@@ -214,6 +219,9 @@ writeLines(c(log_lines, "", capture.output(sessionInfo())), file.path(OUT, "refi
 # ---- REANALYSIS.md section 9 (inserted before "## Not done here") -------------
 v1n <- function(nm) { s <- stored(nm); sum(s$adj.P.Val < 0.05) }
 S <- function(n, col = "fdr05") format(summ[contrast == n][[col]], big.mark = ",")
+carb_var <- as.data.table(m2)[, .(n = uniqueN(carbon_12h[!is.na(carbon_12h)]),
+                                   flt = paste(unique(carbon_12h[flight == "FLT"]), collapse = "/"),
+                                   gc = paste(unique(carbon_12h[flight == "GC"]), collapse = "/")), by = osd_id][n > 1]
 f3 <- function(x) sprintf("%.3f", x); f4 <- function(x) sprintf("%.4f", x)
 rm1 <- repro_m1[[pick]]; cc_v <- setNames(cc$logFC_cor, cc$pair)
 sec <- c(
@@ -241,7 +249,7 @@ sec <- c(
   "| contrast | v1 (stored) | v2 refit |",
   "|---|---|---|",
   sprintf("| flight within BRIC (stored name `Flight_FLT_vs_GC`) | %s | %s (%s) |", format(v1n("Flight_FLT_vs_GC"), big.mark = ","), S("Flight_within_BRIC"), S("Flight_within_BRIC", "fdr05_absLFC1")),
-  sprintf("| **flight averaged over BRIC/CARA/VEGGIE** | not fitted | %s (%s) |", S("Flight_avg_over_HW"), S("Flight_avg_over_HW", "fdr05_absLFC1")),
+  sprintf("| **flight averaged over the hardware classes** | not fitted | %s (%s) |", S("Flight_avg_over_HW"), S("Flight_avg_over_HW", "fdr05_absLFC1")),
   sprintf("| flight × CARA | %s | %s |", format(v1n("Flight_x_HW_CARA_vs_BRIC"), big.mark = ","), S("Flight_x_HW_CARA")),
   sprintf("| flight × VEGGIE | %s | %s |", format(v1n("Flight_x_HW_VEGGIE_vs_BRIC"), big.mark = ","), S("Flight_x_HW_VEGGIE")),
   sprintf("| Model 2: g_bl | %s | %s |", format(v1n("CFD_g_bl"), big.mark = ","), S("CFDv2_g_bl")),
@@ -249,9 +257,12 @@ sec <- c(
   "",
   sprintf("- The within-BRIC and averaged flight effects agree only weakly (logFC correlation %s). The stored headline is the BRIC-specific effect.", f3(cc_v[[1]])),
   sprintf("- g_bl: VIF %.1f in Model 2. It takes 4 values and recodes flight × scale (§4), so its gene count is not a boundary-layer effect.", coll$g_bl[["vif"]]),
-  sprintf("- carbon_12h: study membership explains %.1f %% of its variance (v2 sets every BRIC sample to 1 %%). Its genes are a BRIC-studies-versus-the-rest contrast, not a carbon dose response. The |logFC| > 1 count is 0 because the unit is 1 %% of Earth carbon.", 100 * coll$carbon_12h[["r2_study"]]),
+  sprintf("- carbon_12h: study membership explains %.1f %% of its variance. It varies within only %s, in each case between flight and ground (%s), so within studies it coincides with the flight contrast. Its genes are hardware and flight differences, not a carbon dose response. The |logFC| > 1 count is 0 because the unit is 1 %% of Earth carbon.",
+          100 * coll$carbon_12h[["r2_study"]], paste(carb_var$osd_id, collapse = " and "),
+          paste(sprintf("%s: flight %s / ground %s", carb_var$osd_id, carb_var$flt, carb_var$gc), collapse = "; ")),
   "",
-  "**Platform-separated sensitivity.** RNA-seq: voom on RSEM expected counts, `filterByExpr`, no zero-filling. Microarray: limma-trend on log2 intensities. All microarray samples are BRIC, so hardware terms and carbon_12h drop out there.",
+  sprintf("**Platform-separated sensitivity.** RNA-seq: voom on RSEM expected counts, `filterByExpr`, no zero-filling. Microarray: limma-trend on log2 intensities. All microarray samples are in the BRIC class, so hardware terms drop out there; carbon_12h %s.",
+          if ("carbon_12h" %in% colnames(ra2$X)) "remains estimable on microarray only through OSD-7, whose ground controls were unsealed (100 %) while its flight samples take the sealed value" else "drops out as well"),
   "",
   "| contrast | RNA-seq | microarray |",
   "|---|---|---|",
@@ -259,7 +270,7 @@ sec <- c(
   sprintf("| flight within BRIC | %s | %s |", S("RNAseq_Flight_within_BRIC"), S("Array_Flight_within_BRIC")),
   sprintf("| flight averaged over hardware | %s | — |", S("RNAseq_Flight_avg_over_HW")),
   sprintf("| g_bl | %s | %s |", S("RNAseq_CFDv2_g_bl"), S("Array_CFDv2_g_bl")),
-  sprintf("| carbon_12h | %s | not estimable |", S("RNAseq_CFDv2_carbon_12h")),
+  sprintf("| carbon_12h | %s | %s |", S("RNAseq_CFDv2_carbon_12h"), if ("Array_CFDv2_carbon_12h" %in% summ$contrast) S("Array_CFDv2_carbon_12h") else "not estimable"),
   "",
   sprintf("- Within BRIC, the RNA-seq and microarray flight effects are uncorrelated (logFC r = %s), and the pooled within-BRIC effect does not track the microarray one (r = %s). The pooled averaged effect does track the RNA-seq-only one (r = %s).",
           f3(cc_v[[4]]), f3(cc_v[[3]]), f3(cc_v[[2]])),

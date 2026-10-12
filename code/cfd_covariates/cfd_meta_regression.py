@@ -107,6 +107,10 @@ def main():
     U = pd.DataFrame(units)
     U[["unit", "hardware", "n_flt", "n_gc", "penalty_dCO2", "delta_g_bl"]].to_csv(
         os.path.join(OUT, "meta_regression_units.tsv"), sep="\t", index=False)
+    # Units without a CFD penalty (EMCS has no CFD scenario) stay in the units table but
+    # cannot enter the regression.
+    dropped = U.loc[~np.isfinite(U.penalty_dCO2), "unit"].tolist()
+    U = U[np.isfinite(U.penalty_dCO2)].reset_index(drop=True)
 
     rows = []
     x = U.penalty_dCO2.to_numpy(float)
@@ -136,7 +140,8 @@ def main():
     lines = [
         "## 8. Meta-regression: does the predicted boundary-layer penalty explain which studies respond?\n",
         f"{len(U)} study x scale units from {U.study.nunique()} studies; the predictor takes "
-        f"{U.penalty_dCO2.round(4).nunique()} distinct values (it varies only by hardware x scale).\n",
+        f"{U.penalty_dCO2.round(4).nunique()} distinct values (it varies only by hardware x scale)."
+        + (f" Excluded for lack of a CFD penalty: {', '.join(dropped)} (EMCS has no CFD scenario)." if dropped else "") + "\n",
         "| unit | hardware | FLT/GC | predicted penalty (|ΔC CO₂| µg − Earth) |",
         "|---|---|---|---|",
     ] + [f"| {r.unit} | {r.hardware} | {r.n_flt}/{r.n_gc} | {r.penalty_dCO2:.3f} |" for r in U.itertuples()] + [

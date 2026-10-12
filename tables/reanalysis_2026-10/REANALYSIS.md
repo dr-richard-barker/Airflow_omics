@@ -17,7 +17,7 @@ Columns that do not reproduce:
 
 All expected, from deliberate changes to extract_cfd.py:
 
-- `carbon_12h_pct_earth`: BRIC ground controls use the same sealed hardware, so they get T11's BRIC value, not 100 % (2026-10-08). The CFD class BRIC includes APEX-TAGES (OSD-7), whose 18 ground controls get the same value; TODO: confirm they were sealed
+- `carbon_12h_pct_earth`: BRIC ground controls use the same sealed hardware, so they get T11's BRIC value, not 100 % (2026-10-08)
 - `A_start_umol_m2_s`: as carbon_12h_pct_earth: BRIC ground controls now carry T11's BRIC values (2026-10-08)
 - `A_end_umol_m2_s`: as carbon_12h_pct_earth: BRIC ground controls now carry T11's BRIC values (2026-10-08)
 - `earth_equiv_fan_cm_s`: read from T9 instead of hard-coded 2.8 / 11.0 cm/s (2026-10-07)
@@ -29,62 +29,68 @@ Every other column reproduces, which validates the mapping.
 
 | column | n_mismatch |
 |---|---|
-| dC_CO2_peak | 307 |
 | earth_equiv_fan_cm_s | 307 |
+| dC_CO2_peak | 307 |
 | dC_H2O_peak | 239 |
 | dC_O2_peak | 239 |
-| g_bl_mol_m2_s | 221 |
-| sherwood | 221 |
-| dC_H2O_mean | 153 |
-| o2_excess_ppm_bl | 153 |
-| dC_CO2_mean | 153 |
-| delta_mm | 153 |
-| dC_O2_mean | 153 |
-| dC_CO2_mean_bl | 153 |
-| carbon_12h_pct_earth | 106 |
-| A_start_umol_m2_s | 106 |
-| A_end_umol_m2_s | 106 |
-| u_max | 86 |
-| surf_dC_H2O_hw | 35 |
-| surf_dC_CO2_hw | 35 |
-| fan_cm_s | 35 |
+| g_bl_mol_m2_s | 227 |
+| sherwood | 227 |
+| dC_CO2_mean_bl | 159 |
+| o2_excess_ppm_bl | 159 |
+| dC_H2O_mean | 159 |
+| dC_CO2_mean | 159 |
+| dC_O2_mean | 159 |
+| delta_mm | 159 |
+| carbon_12h_pct_earth | 105 |
+| A_end_umol_m2_s | 99 |
+| A_start_umol_m2_s | 99 |
+| u_max | 97 |
+| surf_dC_H2O_hw | 41 |
+| surf_dC_CO2_hw | 41 |
+| fan_cm_s | 41 |
+| enclosure_type | 35 |
+| co2_drawdown_mean_ppm | 17 |
+| co2_drawdown_peak_ppm | 17 |
+| o2_buildup_mean_ppm | 17 |
+| Ra_H2O | 17 |
+| has_forced_airflow | 17 |
+| net_assimilation_pct | 11 |
+| dishmean_CO2_hw | 6 |
 
 g_bl per cell, old -> new: earth/leaf 1.000 -> 0.997; earth/rosette 0.540 -> 0.540; ug/leaf 0.494 -> 0.443; ug/rosette 0.291 -> 0.272
 
 Not updated because their LunarLeaf source tables were not regenerated: co2_drawdown_* / o2_buildup_* (T5), net_assimilation_pct (T12).
 
-OSDR hardware -> CFD class (`extract_cfd.py`). APEX-TAGES is folded into BRIC and EMCS into VEGGIE, so every CFD covariate for them, including the ground-control carbon value, is the class value:
+OSDR hardware -> CFD class used for the v2 covariates (`extract_cfd.py`). Ground-control enclosures as confirmed by R. Barker (2026-10-12): BRIC ground controls use the sealed flight hardware; APEX-TAGES (OSD-7) ground controls were not sealed, so they keep 100 % carbon while OSD-7 flight samples take the BRIC class; CARA and VEGGIE ground controls grew in the ISS Environmental Simulator (ISSES) chamber at KSC (100 %); EMCS (OSD-314) is its own class with no CFD scenario, so its CFD covariates are missing and it drops out of the CFD analyses:
 
 | hardware | cfd_hardware | studies | n |
 |---|---|---|---|
 | APEX-TAGES | BRIC | OSD-7 | 36 |
 | BRIC | BRIC | OSD-147, OSD-17, OSD-205, OSD-321, OSD-37, OSD-38 | 170 |
 | CARA | CARA | OSD-120 | 36 |
-| EMCS | VEGGIE | OSD-314 | 17 |
+| EMCS | EMCS | OSD-314 | 17 |
 | Veggie | VEGGIE | OSD-217, OSD-678 | 48 |
-
-TODO: confirm that the APEX-TAGES (OSD-7) ground controls were sealed like BRIC's, and whether EMCS (OSD-314) is adequately represented by the vented VEGGIE scenario.
 
 ## 3. Original method (Pearson, n = 307, BH)
 
 Reproduces the stored `pathway_cfd_correlations.tsv`: 84/84 rows matched, max |Δr| = 1.11e-16.
 
 - `g_bl_mol_m2_s`: FDR < 0.05 in 28/28 pathways with old covariates, 28/28 with new; max |r| 0.467 -> 0.431.
-- `carbon_12h_pct_earth`: FDR < 0.05 in 27/28 pathways with old covariates, 27/28 with new; max |r| 0.294 -> 0.585.
-- `delta_mm`: FDR < 0.05 in 28/28 pathways with old covariates, 28/28 with new; max |r| 0.460 -> 0.422.
+- `carbon_12h_pct_earth`: FDR < 0.05 in 27/28 pathways with old covariates, 27/28 with new; max |r| 0.294 -> 0.384.
+- `delta_mm`: FDR < 0.05 in 28/28 pathways with old covariates, 28/28 with new; max |r| 0.460 -> 0.428.
 
-`carbon_12h_pct_earth` by hardware and flight (new covariates): BRIC FLT 1 / GC 1; CARA FLT 90 / GC 100; VEGGIE FLT 100 / GC 100. Within BRIC it no longer differs between flight and ground, so its correlation with pathway scores now reflects which studies used BRIC (a between-study, hardware difference), not a flight effect.
+`carbon_12h_pct_earth` by OSDR hardware and flight (new covariates): APEX-TAGES FLT 1 / GC 100; BRIC FLT 1 / GC 1; CARA FLT 90 / GC 100; EMCS FLT NaN / GC NaN; Veggie FLT 100 / GC 100. Within BRIC it no longer differs between flight and ground, so its correlation with pathway scores reflects which studies used sealed hardware (a between-study difference), not a flight effect.
 
 ## 4. Is g_bl identifiable separately from flight and scale?
 
 | gravity_key | cfd_scale | 0.272 | 0.443 | 0.54 | 0.997 |
 |---|---|---|---|---|---|
 | earth | leaf | 0 | 0 | 0 | 68 |
-| earth | rosette | 0 | 0 | 86 | 0 |
+| earth | rosette | 0 | 0 | 80 | 0 |
 | ug | leaf | 0 | 68 | 0 | 0 |
-| ug | rosette | 85 | 0 | 0 | 0 |
+| ug | rosette | 74 | 0 | 0 | 0 |
 
-Design rank: study + flight × scale = 14 columns; adding g_bl gives rank 14 of 15 columns. g_bl is a deterministic relabelling of the flight × scale cells, so no model can attribute an effect to g_bl rather than to flight and organ scale in this design. Its correlations with pathways are flight × scale contrasts under another name.
+Design rank, 290 samples with g_bl (17 without, excluded): study + flight × scale = 13 columns; adding g_bl gives rank 13 of 14 columns. g_bl is a deterministic relabelling of the flight × scale cells, so no model can attribute an effect to g_bl rather than to flight and organ scale in this design. Its correlations with pathways are flight × scale contrasts under another name.
 
 ## 5. Within-study model per pathway
 
@@ -105,11 +111,11 @@ Of the 28 pathways 'significant' for g_bl by Pearson, 0 have any FDR < 0.05 term
 - `CFD_g_bl` (logFC per 1 mol m⁻² s⁻¹; the covariate spans only 0.709, SD 0.253): |logFC| > 1 & FDR < 0.05 → 3633 genes. The same genes per 1 SD of g_bl: |logFC·SD| > 1 → 813; per full observed range: 3010. The cutoff counts depend on the unit chosen, so for a continuous covariate report FDR plus an effect size per SD or per observed range.
 ## 7. In-dish covariate (LunarLeaf T19)
 
-`g_bl_dish` (leaf conductance to the dish's own air, in the real BRIC 60 mm / CARA 120 mm dish) is defined for 112 leaf samples in BRIC or CARA hardware from 5 studies. It is NaN for rosette-scale and VEGGIE samples, so it is kept as a separate column rather than replacing `g_bl`.
+`g_bl_dish` (leaf conductance to the dish's own air, in the real BRIC 60 mm / CARA 120 mm dish) is defined for 97 leaf samples in BRIC or CARA hardware from 5 studies. It is NaN for rosette-scale and VEGGIE samples, so it is kept as a separate column rather than replacing `g_bl`.
 
 | cfd_hardware | gravity_key | n | studies | g_bl_dish | g_bl_open_box | note |
 |---|---|---|---|---|---|---|
-| BRIC | earth | 38 | 4 | 0.33 | 0.997 | indicative: sealed 1 g not steady, beyond Boussinesq limit |
+| BRIC | earth | 23 | 3 | 0.33 | 0.997 | indicative: sealed 1 g not steady, beyond Boussinesq limit |
 | BRIC | ug | 38 | 4 | 0.185 | 0.443 | steady |
 | CARA | earth | 18 | 1 | 0.263 | 0.997 | steady |
 | CARA | ug | 18 | 1 | 0.186 | 0.443 | steady |
@@ -124,7 +130,7 @@ Within-study model on this subset (`score ~ study + flight + flight × CARA`, CR
 
 ## 8. Meta-regression: does the predicted boundary-layer penalty explain which studies respond?
 
-14 study x scale units from 11 studies; the predictor takes 5 distinct values (it varies only by hardware x scale).
+13 study x scale units from 10 studies; the predictor takes 5 distinct values (it varies only by hardware x scale). Excluded for lack of a CFD penalty: OSD-314|rosette (EMCS has no CFD scenario).
 
 | unit | hardware | FLT/GC | predicted penalty (|ΔC CO₂| µg − Earth) |
 |---|---|---|---|
@@ -134,7 +140,6 @@ Within-study model on this subset (`score ~ study + flight + flight × CARA`, CR
 | OSD-17|rosette | BRIC | 6/6 | 0.279 |
 | OSD-205|leaf | BRIC | 8/8 | 0.151 |
 | OSD-217|leaf | VEGGIE | 6/6 | -0.074 |
-| OSD-314|rosette | VEGGIE | 11/6 | -0.004 |
 | OSD-321|rosette | BRIC | 22/22 | 0.279 |
 | OSD-37|rosette | BRIC | 28/28 | 0.279 |
 | OSD-38|rosette | BRIC | 3/9 | 0.279 |
@@ -143,10 +148,10 @@ Within-study model on this subset (`score ~ study + flight + flight × CARA`, CR
 | OSD-7|leaf | BRIC | 15/15 | 0.151 |
 | OSD-7|rosette | BRIC | 3/3 | 0.279 |
 
-- Knapp–Hartung (primary): flight effect scales with the predicted penalty at FDR < 0.05 in **1/28** pathways (smallest p = 0.000822, ga_biosynthesis). The DerSimonian–Laird z-test, which is over-confident with this few units, would have reported 14/28 (smallest p = 1.1e-12).
-- Of the FDR-significant pathways, 1 are also significant with a plain VEGGIE-vs-other indicator, and 0 show the slope within BRIC units alone (where the penalty varies only by organ scale). Leave-one-study-out: 1 stay p < 0.05 whichever study is dropped.
+- Knapp–Hartung (primary): flight effect scales with the predicted penalty at FDR < 0.05 in **6/28** pathways (smallest p = 0.000672, ga_biosynthesis). The DerSimonian–Laird z-test, which is over-confident with this few units, would have reported 15/28 (smallest p = 1.1e-13).
+- Of the FDR-significant pathways, 6 are also significant with a plain VEGGIE-vs-other indicator, and 0 show the slope within BRIC units alone (where the penalty varies only by organ scale). Leave-one-study-out: 2 stay p < 0.05 whichever study is dropped.
 - **Reading:** the signal is a VEGGIE-versus-sealed-hardware difference in the flight response, consistent with the boundary-layer physics but not separable from which studies (labs, years, organs) used VEGGIE. There is no evidence yet of a within-hardware dose-response to the predicted penalty.
-- Positive control: a planted effect of 1 SD of the unit-level effects per SD of penalty is detected (p < 0.05) in 24/28 pathways.
+- Positive control: a planted effect of 1 SD of the unit-level effects per SD of penalty is detected (p < 0.05) in 22/28 pathways.
 - Caveats: few units, the penalty varies only by hardware × scale (so it is also confounded with which studies used which hardware), and T10's BRIC/CARA values are the original 3.8 s values, not steady state.
 
 ## 9. Gene-level limma refit with the v2 covariates
@@ -168,28 +173,28 @@ So the original pipeline **set unmeasured genes to 0**: of 30,833 genes in the o
 
 | contrast | v1 (stored) | v2 refit |
 |---|---|---|
-| flight within BRIC (stored name `Flight_FLT_vs_GC`) | 11,783 | 11,675 (715) |
-| **flight averaged over BRIC/CARA/VEGGIE** | not fitted | 4,598 (285) |
-| flight × CARA | 6,909 | 6,822 |
-| flight × VEGGIE | 10,904 | 10,491 |
-| Model 2: g_bl | 4,020 | 8,954 |
-| Model 2: carbon_12h | 9,561 | 8,449 |
+| flight within BRIC (stored name `Flight_FLT_vs_GC`) | 11,783 | 11,797 (722) |
+| **flight averaged over the hardware classes** | not fitted | 2,981 (254) |
+| flight × CARA | 6,909 | 7,032 |
+| flight × VEGGIE | 10,904 | 11,400 |
+| Model 2: g_bl | 4,020 | 7,419 |
+| Model 2: carbon_12h | 9,561 | 484 |
 
-- The within-BRIC and averaged flight effects agree only weakly (logFC correlation 0.352). The stored headline is the BRIC-specific effect.
-- g_bl: VIF 13.6 in Model 2. It takes 4 values and recodes flight × scale (§4), so its gene count is not a boundary-layer effect.
-- carbon_12h: study membership explains 99.9 % of its variance (v2 sets every BRIC sample to 1 %). Its genes are a BRIC-studies-versus-the-rest contrast, not a carbon dose response. The |logFC| > 1 count is 0 because the unit is 1 % of Earth carbon.
+- The within-BRIC and averaged flight effects agree only weakly (logFC correlation 0.207). The stored headline is the BRIC-specific effect.
+- g_bl: VIF 14.2 in Model 2. It takes 4 values and recodes flight × scale (§4), so its gene count is not a boundary-layer effect.
+- carbon_12h: study membership explains 85.8 % of its variance. It varies within only OSD-120 and OSD-7, in each case between flight and ground (OSD-120: flight 90 / ground 100; OSD-7: flight 1 / ground 100), so within studies it coincides with the flight contrast. Its genes are hardware and flight differences, not a carbon dose response. The |logFC| > 1 count is 0 because the unit is 1 % of Earth carbon.
 
-**Platform-separated sensitivity.** RNA-seq: voom on RSEM expected counts, `filterByExpr`, no zero-filling. Microarray: limma-trend on log2 intensities. All microarray samples are BRIC, so hardware terms and carbon_12h drop out there.
+**Platform-separated sensitivity.** RNA-seq: voom on RSEM expected counts, `filterByExpr`, no zero-filling. Microarray: limma-trend on log2 intensities. All microarray samples are in the BRIC class, so hardware terms drop out there; carbon_12h remains estimable on microarray only through OSD-7, whose ground controls were unsealed (100 %) while its flight samples take the sealed value.
 
 | contrast | RNA-seq | microarray |
 |---|---|---|
 | samples / studies | 213 / 7 | 94 / 4 |
-| flight within BRIC | 10,995 | 115 |
-| flight averaged over hardware | 3,258 | — |
-| g_bl | 7,460 | 656 |
-| carbon_12h | 2,598 | not estimable |
+| flight within BRIC | 11,938 | 115 |
+| flight averaged over hardware | 2,250 | — |
+| g_bl | 6,808 | 655 |
+| carbon_12h | 3,613 | 417 |
 
-- Within BRIC, the RNA-seq and microarray flight effects are uncorrelated (logFC r = -0.050), and the pooled within-BRIC effect does not track the microarray one (r = -0.022). The pooled averaged effect does track the RNA-seq-only one (r = 0.849).
+- Within BRIC, the RNA-seq and microarray flight effects are uncorrelated (logFC r = -0.051), and the pooled within-BRIC effect does not track the microarray one (r = -0.023). The pooled averaged effect does track the RNA-seq-only one (r = 0.887).
 - **Reading:** the gene level agrees with §5 and §8. Neither CFD covariate is identifiable from study and hardware, so neither gene count supports a gas-exchange interpretation. The flight response differs by hardware and by platform/study era, and pooling with zero-filled genes hides that. Report the averaged flight effect, by platform, as the headline.
 - Caveats: the inter-study correlation uses one `duplicateCorrelation` pass, matching the original script. The variance-partition section of `fit_factorial_model.R` was not rerun (variancePartition not installed). Pathway (GSVA) scores were not recomputed from the rebuilt matrix.
 
@@ -197,19 +202,19 @@ So the original pipeline **set unmeasured genes to 0**: of 30,833 genes in the o
 
 `code/factorial_model/followups_2026-10.R` (shared loaders in `osdr_helpers_2026-10.R`). Tables: `followups/`.
 
-**Pooled gene-level fit on genes measured in all 11 studies.** Same pipeline and v2 covariates as §9, but only the 17,129 genes present in every study (17,129 after the CPM filter), so nothing is zero-filled. Inter-study ρ 0.6412 (zero-filled 0.7327).
+**Pooled gene-level fit on genes measured in all 11 studies.** Same pipeline and v2 covariates as §9, but only the 17,129 genes present in every study (17,129 after the CPM filter), so nothing is zero-filled. Inter-study ρ 0.6349 (zero-filled 0.7327).
 
 | contrast | zero-filled FDR < 0.05 (of 25,453) | complete-case FDR < 0.05 | logFC r on common genes | significant in both |
 |---|---|---|---|---|
-| flight within BRIC | 11,675 | 10,831 | 0.968 | 9,655 |
-| flight averaged over hardware | 4,598 | 3,637 | 0.958 | 3,352 |
-| flight × CARA | 6,822 | 6,171 | 0.959 | 5,467 |
-| flight × VEGGIE | 10,491 | 8,762 | 0.965 | 8,148 |
-| Model 2: g_bl | 8,954 | 7,111 | 0.952 | 6,204 |
-| Model 2: carbon_12h | 8,449 | 2,099 | 0.931 | 1,904 |
+| flight within BRIC | 11,797 | 10,915 | 0.968 | 9,734 |
+| flight averaged over hardware | 2,981 | 2,361 | 0.957 | 2,135 |
+| flight × CARA | 7,032 | 6,305 | 0.957 | 5,630 |
+| flight × VEGGIE | 11,400 | 9,217 | 0.937 | 8,681 |
+| Model 2: g_bl | 7,419 | 7,126 | 0.958 | 5,990 |
+| Model 2: carbon_12h | 484 | 1,706 | 0.935 | 288 |
 
-- The averaged flight effect from the complete-case fit agrees with the RNA-seq-only fit at logFC r = 0.893.
-- carbon_12h loses most of its genes (8,449 -> 2,099): carbon_12h is 1 % for every BRIC sample and all microarray samples are BRIC, so genes that were zero-filled in the microarray studies looked like a carbon effect. g_bl goes from 8,954 to 7,111.
+- The averaged flight effect from the complete-case fit agrees with the RNA-seq-only fit at logFC r = 0.900.
+- Without zero-filled genes, carbon_12h goes from 484 to 1,706 genes at FDR < 0.05 and g_bl from 7,419 to 7,126. Neither count is a carbon or conductance effect: both covariates are confounded with study and hardware (§4, §9).
 - Removing the zero-filled genes does not rescue either CFD covariate: they stay confounded with study and hardware by design (§4, §9). Microarray and RNA-seq values are still pooled in one voom model here, which is why §9's platform-separated fit remains the preferred analysis.
 
 **Pathway scores recomputed from the rebuilt matrix.**
@@ -243,14 +248,14 @@ The same scripts (`cfd_reanalysis.py`, `cfd_meta_regression.py`) rerun with `PAT
 | §5 within-study model, scale (FDR < 0.05 of 28) | 0 (none) | 3 (ethylene_biosynthesis, gravitropism_signaling, ja_signaling) |
 | §5 within-study model, flight_x_scale (FDR < 0.05 of 28) | 0 (none) | 0 (none) |
 | §5 positive control, 0.25 / 0.5 SD | 28/28, 28/28 | 8/28, 15/28 |
-| §7 in-dish subset, flight (FDR < 0.05 of 28) | 0 (none) | 1 (auxin_biosynthesis) |
-| §8 Knapp–Hartung meta-regression (FDR < 0.05 of 28) | 1 (ga_biosynthesis) | 0 (none) |
-| §8 positive control (detected of 28) | 24 | 20 |
+| §7 in-dish subset, flight (FDR < 0.05 of 28) | 0 (none) | 1 (ethylene_signaling) |
+| §8 Knapp–Hartung meta-regression (FDR < 0.05 of 28) | 6 (auxin_biosynthesis, cell_wall_biosynthesis, cytokinin_biosynthesis, ga_biosynthesis, lignin_biosynthesis, sucrose_metabolism) | 0 (none) |
+| §8 positive control (detected of 28) | 22 | 21 |
 
-- Per-pathway flight t-statistics (§5) correlate at r = 0.63 between stored and rescored scores; meta-regression slopes (§8) at r = 0.33.
-- §8's one stored hit, ga_biosynthesis (Knapp–Hartung p = 0.00082), has p = 0.0067 (FDR = 0.094) on the rescored scores. Its stored score repeats 4 gene(s) in its set and includes zero-filled genes, and the VEGGIE-vs-sealed-hardware signal reported in §8 does not survive correct scoring.
+- Per-pathway flight t-statistics (§5) correlate at r = 0.63 between stored and rescored scores; meta-regression slopes (§8) at r = 0.38.
+- §8 on the stored scores finds 6 pathway(s) at FDR < 0.05; 0 remain significant on the rescored scores. The strongest, ga_biosynthesis (Knapp–Hartung p = 0.00067), has p = 0.0048 (FDR = 0.11) on the rescored scores; its stored score repeats 4 gene(s) in its set and includes zero-filled genes. The stored-score meta-regression hits do not survive correct scoring.
 - The rescored scores show a scale (rosette vs leaf) difference in 3 pathway(s), consistent with organ composition once study and platform scale differences are removed.
-- **Reading:** on correctly scored pathways, neither the all-study model (§5) nor the meta-regression (§8) finds a flight effect or a CFD dose-response at FDR < 0.05; the in-dish subset (§7: 5 studies, t on 4 df) flags 1 pathway(s) for flight (auxin_biosynthesis), which is a single hit among 28 on a small subset and is not replicated in §5. The positive controls show the pathway-level tests can only rule out large effects. The pathway results support 'no large, consistent pathway-level flight response across these 11 studies', not a boundary-layer mechanism; the CARA-specific flight response remains untestable (one study).
+- **Reading:** on correctly scored pathways, neither the all-study model (§5) nor the meta-regression (§8) finds a flight effect or a CFD dose-response at FDR < 0.05; the in-dish subset (§7: 5 studies, t on 4 df) flags 1 pathway(s) for flight (ethylene_signaling), which is a single hit among 28 on a small subset and is not replicated in §5. The positive controls show the pathway-level tests can only rule out large effects. The pathway results support 'no large, consistent pathway-level flight response across these 11 studies', not a boundary-layer mechanism; the CARA-specific flight response remains untestable (one study).
 
 ## 12. Variance partitioning, redone
 
@@ -258,27 +263,27 @@ The same scripts (`cfd_reanalysis.py`, `cfd_meta_regression.py`) rerun with `PAT
 
 The stored `tables/variance_partition_summary.tsv` should not be used. `fit_factorial_model.R` entered the categorical factors as fixed effects, which variancePartition does not partition correctly, and the stored summary is internally inconsistent: `cfd_hardware` has a median of 66 % but a mean of ~0 %, which is impossible for non-negative fractions, and there are no residual, g_bl or carbon_12h rows.
 
-Here every categorical factor is a random effect, and hardware and study enter as nested components (each study used one hardware; canonical correlation hardware ~ study = 1.00). g_bl and carbon_12h are left out: they are functions of hardware × flight × scale (canonical correlation carbon_12h ~ study = 1.00).
+Here every categorical factor is a random effect, and hardware and study enter as nested components (each study used one hardware; canonical correlation hardware ~ study = 1.00). g_bl and carbon_12h are left out: they are functions of hardware × flight × scale (canonical correlation carbon_12h ~ study = 0.93).
 
 Percent of each gene's variance, mean / median across genes:
 
-| component | pooled, genes in all studies (17,129 genes, 307 samples) | RNA-seq only (23,531 genes, 213 samples) |
+| component | pooled, genes in all studies (17,129 genes, 307 samples) | RNA-seq only (24,774 genes, 213 samples) |
 |---|---|---|
-| study (within hardware) | 53.3 / 56.1 | 44.8 / 45.9 |
-| hardware | 0.2 / 0.0 | 0.2 / 0.0 |
-| organ | 1.5 / 0.0 | 1.3 / 0.0 |
-| light | 9.9 / 6.8 | 10.2 / 7.4 |
-| ecotype | 6.7 / 3.4 | 7.4 / 3.3 |
-| flight (common to all studies) | 0.3 / 0.0 | 0.6 / 0.0 |
-| flight × hardware | 2.5 / 0.0 | 2.2 / 0.0 |
-| flight × study | 8.3 / 4.4 | 11.9 / 6.5 |
-| **all flight terms** | 11.1 / 5.7 | 14.7 / 8.5 |
-| residual | 17.3 / 14.8 | 21.4 / 17.5 |
+| study (within hardware) | 52.9 / 55.8 | 44.3 / 45.4 |
+| hardware | 0.1 / 0.0 | 0.2 / 0.0 |
+| organ | 1.5 / 0.0 | 1.2 / 0.0 |
+| light | 9.8 / 6.7 | 9.9 / 6.9 |
+| ecotype | 6.6 / 3.4 | 7.3 / 3.0 |
+| flight (common to all studies) | 0.3 / 0.0 | 0.0 / 0.0 |
+| flight × hardware | 4.4 / 0.3 | 4.2 / 1.0 |
+| flight × study | 7.1 / 3.7 | 11.0 / 6.0 |
+| **all flight terms** | 11.8 / 6.0 | 15.1 / 9.0 |
+| residual | 17.2 / 14.6 | 22.0 / 18.2 |
 
-- Study and hardware together account for 54 % (pooled) and 45 % (RNA-seq) of the average gene's variance; all flight terms together for 11 % and 15 %.
-- Of the flight variance, the part shared by all studies is 0.3 % (pooled) and 0.6 % (RNA-seq); the study-specific part (flight × study) is 8.3 % and 11.9 %. The flight response is mostly study-specific, which is why pooled flight contrasts are sensitive to which studies are included (§9).
-- Genes with more than 10 % of their variance in the flight effect common to all studies: 10 of 17,129 (pooled) and 71 of 23,531 (RNA-seq); in flight × study: 4,597 and 8,899.
-- Hardware and flight × hardware are estimated from only 3 hardware groups, so their split from the study components is imprecise; read study + hardware, and the three flight terms, as totals.
+- Study and hardware together account for 53 % (pooled) and 44 % (RNA-seq) of the average gene's variance; all flight terms together for 12 % and 15 %.
+- Of the flight variance, the part shared by all studies is 0.3 % (pooled) and 0.0 % (RNA-seq); the study-specific part (flight × study) is 7.1 % and 11.0 %. The flight response is mostly study-specific, which is why pooled flight contrasts are sensitive to which studies are included (§9).
+- Genes with more than 10 % of their variance in the flight effect common to all studies: 7 of 17,129 (pooled) and 0 of 24,774 (RNA-seq); in flight × study: 3,889 and 8,848.
+- Hardware and flight × hardware are estimated from only 4 hardware groups, so their split from the study components is imprecise; read study + hardware, and the three flight terms, as totals.
 
 ## 13. RNA-seq vs microarray: platform or study?
 
@@ -300,9 +305,9 @@ Percent of each gene's variance, mean / median across genes:
 | OSD-7|shoot | microarray | BRIC | 5 / 5 |     12 |
 | OSD-7|whole_seedling | microarray | BRIC | 3 / 3 |      0 |
 | OSD-120|root | RNAseq | CARA | 18 / 18 |    328 |
+| OSD-314|whole_seedling | RNAseq | EMCS | 11 / 6 |  6,455 |
 | OSD-217|leaf | RNAseq | VEGGIE | 3 / 3 | 13,827 |
 | OSD-217|root | RNAseq | VEGGIE | 3 / 3 | 15,030 |
-| OSD-314|whole_seedling | RNAseq | VEGGIE | 11 / 6 |  6,455 |
 | OSD-678|leaf | RNAseq | VEGGIE | 6 / 6 |      7 |
 | OSD-678|whole_seedling | RNAseq | VEGGIE | 12 / 12 |  4,633 |
 
@@ -325,4 +330,4 @@ For reference, different organs within the same study agree at median r = 0.35. 
 
 ## Not done here
 
-The gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`), its follow-ups §10 (`followups_2026-10.R`), the rescored §5/§7/§8 comparison §11 (`code/cfd_covariates/rescored_comparison.py`), the variance partition §12 (`variance_partition_2026-10.R`) and the platform comparison §13 (`platform_concordance_2026-10.R`); run them in that order after `cfd_meta_regression.py`. No analysis items from this reanalysis remain open. Open for the authors: the headline claim and the manuscript, README and site text that follow from it; the RNA-seq vs microarray result (§13) is to be reported as a finding.
+The gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`), its follow-ups §10 (`followups_2026-10.R`), the rescored §5/§7/§8 comparison §11 (`code/cfd_covariates/rescored_comparison.py`), the variance partition §12 (`variance_partition_2026-10.R`) and the platform comparison §13 (`platform_concordance_2026-10.R`); run them in that order after `cfd_meta_regression.py`. No analysis items remain open. The headline claim is in `reports/HEADLINE_2026-10.md`; the manuscript still needs the author ORCID and an archival DOI.

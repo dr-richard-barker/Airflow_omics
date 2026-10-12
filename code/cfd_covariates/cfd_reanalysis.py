@@ -203,7 +203,7 @@ def main():
             by_design = {
                 "earth_equiv_fan_cm_s": "read from T9 instead of hard-coded 2.8 / 11.0 cm/s (2026-10-07)",
                 "fan_cm_s": "VEGGIE fan is the modelled 8.3 cm/s, not the Earth-equivalent 2.8 (2026-10-07)",
-                "carbon_12h_pct_earth": "BRIC ground controls use the same sealed hardware, so they get T11's BRIC value, not 100 % (2026-10-08). The CFD class BRIC includes APEX-TAGES (OSD-7), whose 18 ground controls get the same value; TODO: confirm they were sealed",
+                "carbon_12h_pct_earth": "BRIC ground controls use the same sealed hardware, so they get T11's BRIC value, not 100 % (2026-10-08)",
                 "A_start_umol_m2_s": "as carbon_12h_pct_earth: BRIC ground controls now carry T11's BRIC values (2026-10-08)",
                 "A_end_umol_m2_s": "as carbon_12h_pct_earth: BRIC ground controls now carry T11's BRIC values (2026-10-08)",
             }
@@ -219,7 +219,19 @@ def main():
         log("LUNARLEAF_OLD_TABLES not set: mapping check skipped.\n")
 
     # 3. apply new covariates
-    meta_new = apply(meta, sc_new)
+    # Sample-level hardware facts (R. Barker, 2026-10-12): EMCS is not the vented VEGGIE
+    # class and has no CFD scenario; APEX-TAGES ground controls were not sealed.
+    meta_hw = meta.copy()
+    meta_hw.loc[meta_hw.hardware == "EMCS", "cfd_hardware"] = "EMCS"
+    meta_new = apply(meta_hw, sc_new)
+    apex_gc = (meta_new.hardware == "APEX-TAGES") & (meta_new.gravity_key == "earth")
+    meta_new.loc[apex_gc, "carbon_12h_pct_earth"] = 100.0
+    meta_new.loc[apex_gc, ["A_start_umol_m2_s", "A_end_umol_m2_s"]] = np.nan
+    # nor do the sealed-dish quantities apply to them
+    meta_new.loc[apex_gc, "enclosure_type"] = "unsealed"
+    for c in ["g_bl_dish_mol_m2_s", "g_bl_dish_vs_ambient", "dish_headspace_mm"]:
+        if c in meta_new: meta_new.loc[apex_gc, c] = np.nan
+    if "g_bl_dish_note" in meta_new: meta_new.loc[apex_gc, "g_bl_dish_note"] = ""
     meta_new.to_csv(os.path.join(OUT, "expression_metadata_with_cfd_v2.tsv"), sep="\t", index=False)
     changed = compare(meta, meta_new, cfd_cols)
     changed = changed[changed.n_mismatch > 0].sort_values("n_mismatch", ascending=False)
@@ -231,13 +243,16 @@ def main():
     log("\ng_bl per cell, old -> new: " + "; ".join(f"{k[0]}/{k[1]} {g_old[k]:.3f} -> {g[k]:.3f}" for k in g.index))
     log("\nNot updated because their LunarLeaf source tables were not regenerated: "
         "co2_drawdown_* / o2_buildup_* (T5), net_assimilation_pct (T12).\n")
-    hwmap = (meta.groupby(["hardware", "cfd_hardware"])
+    hwmap = (meta_new.groupby(["hardware", "cfd_hardware"])
              .agg(studies=("osd_id", lambda x: ", ".join(sorted(x.unique()))), n=("osd_id", "size")).reset_index())
-    log("OSDR hardware -> CFD class (`extract_cfd.py`). APEX-TAGES is folded into BRIC and EMCS into VEGGIE, so "
-        "every CFD covariate for them, including the ground-control carbon value, is the class value:\n")
+    log("OSDR hardware -> CFD class used for the v2 covariates (`extract_cfd.py`). Ground-control enclosures as "
+        "confirmed by R. Barker (2026-10-12): BRIC ground controls use the sealed flight hardware; APEX-TAGES (OSD-7) "
+        "ground controls were not sealed, so they keep 100 % carbon while OSD-7 flight samples take the BRIC class; "
+        "CARA and VEGGIE ground controls grew in the ISS Environmental Simulator (ISSES) chamber at KSC (100 %); EMCS "
+        "(OSD-314) is its own class with no CFD scenario, so its CFD covariates are missing and it drops out of the CFD "
+        "analyses:\n")
     log(md(hwmap))
-    log("\nTODO: confirm that the APEX-TAGES (OSD-7) ground controls were sealed like BRIC's, and whether EMCS (OSD-314) "
-        "is adequately represented by the vented VEGGIE scenario.\n")
+    log("")
 
     # 4. original Pearson method: validate, then rerun on new covariates
     covs = ["g_bl_mol_m2_s", "carbon_12h_pct_earth", "delta_mm"]
@@ -261,11 +276,12 @@ def main():
         a, b = p_old[p_old.cfd_covariate == cv], p_new[p_new.cfd_covariate == cv]
         log(f"- `{cv}`: FDR < 0.05 in {int((a.fdr < 0.05).sum())}/{len(a)} pathways with old covariates, "
             f"{int((b.fdr < 0.05).sum())}/{len(b)} with new; max |r| {a.correlation.abs().max():.3f} -> {b.correlation.abs().max():.3f}.")
-    cv = meta_new.groupby(["cfd_hardware", "flight"])["carbon_12h_pct_earth"].first().unstack()
-    log("\n`carbon_12h_pct_earth` by hardware and flight (new covariates): "
-        + "; ".join(f"{hw} FLT {cv.loc[hw, 'FLT']:g} / GC {cv.loc[hw, 'GC']:g}" for hw in cv.index)
+    fmt_vals = lambda x: "/".join(f"{v:g}" for v in sorted(x.dropna().unique())) or "NaN"
+    cv = meta_new.groupby(["hardware", "flight"])["carbon_12h_pct_earth"].agg(fmt_vals).unstack()
+    log("\n`carbon_12h_pct_earth` by OSDR hardware and flight (new covariates): "
+        + "; ".join(f"{hw} FLT {cv.loc[hw, 'FLT']} / GC {cv.loc[hw, 'GC']}" for hw in cv.index)
         + ". Within BRIC it no longer differs between flight and ground, so its correlation with pathway scores "
-        "now reflects which studies used BRIC (a between-study, hardware difference), not a flight effect.")
+        "reflects which studies used sealed hardware (a between-study difference), not a flight effect.")
     log("")
 
     # 5. identifiability + within-study model
@@ -273,8 +289,12 @@ def main():
     ct = pd.crosstab([meta_new.gravity_key, meta_new.cfd_scale], meta_new.g_bl_mol_m2_s)
     log(md(ct, index=True))
     X, names = within_study_design(new_df)
-    Xg = np.column_stack([X, new_df["g_bl_mol_m2_s"].to_numpy()])
-    log(f"\nDesign rank: study + flight × scale = {np.linalg.matrix_rank(X)} columns; adding g_bl gives rank "
+    gbl = new_df["g_bl_mol_m2_s"].to_numpy(float)
+    has = np.isfinite(gbl)   # EMCS has no CFD covariates
+    Xs = X[has][:, np.abs(X[has]).sum(axis=0) > 0]   # drop study columns with no remaining samples
+    Xg = np.column_stack([Xs, gbl[has]])
+    log(f"\nDesign rank, {int(has.sum())} samples with g_bl{'' if has.all() else f' ({int((~has).sum())} without, excluded)'}: "
+        f"study + flight × scale = {np.linalg.matrix_rank(Xs)} columns; adding g_bl gives rank "
         f"{np.linalg.matrix_rank(Xg)} of {Xg.shape[1]} columns. g_bl is a deterministic relabelling of the flight × "
         "scale cells, so no model can attribute an effect to g_bl rather than to flight and organ scale in this design. "
         "Its correlations with pathways are flight × scale contrasts under another name.\n")
@@ -411,7 +431,7 @@ def main():
 
     for line in dish_section:
         log(line)
-    log("\n## Not done here\n\nThe gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`), its follow-ups §10 (`followups_2026-10.R`), the rescored §5/§7/§8 comparison §11 (`code/cfd_covariates/rescored_comparison.py`), the variance partition §12 (`variance_partition_2026-10.R`) and the platform comparison §13 (`platform_concordance_2026-10.R`); run them in that order after `cfd_meta_regression.py`. No analysis items from this reanalysis remain open. Open for the authors: the headline claim and the manuscript, README and site text that follow from it; the RNA-seq vs microarray result (§13) is to be reported as a finding.")
+    log("\n## Not done here\n\nThe gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`), its follow-ups §10 (`followups_2026-10.R`), the rescored §5/§7/§8 comparison §11 (`code/cfd_covariates/rescored_comparison.py`), the variance partition §12 (`variance_partition_2026-10.R`) and the platform comparison §13 (`platform_concordance_2026-10.R`); run them in that order after `cfd_meta_regression.py`. No analysis items remain open. The headline claim is in `reports/HEADLINE_2026-10.md`; the manuscript still needs the author ORCID and an archival DOI.")
     # keep sections written later by other scripts (§9 onward: the R refits and §11)
     rpath = os.path.join(OUT, "REANALYSIS.md")
     text = "\n".join(report) + "\n"

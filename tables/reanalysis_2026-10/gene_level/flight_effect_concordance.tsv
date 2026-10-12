@@ -1,5 +1,5 @@
 pair	logFC_cor
-pooled within-BRIC vs pooled avg-over-HW	0.352030552594603
-pooled avg-over-HW vs RNA-seq avg-over-HW	0.849064485597598
-pooled within-BRIC vs array within-BRIC	-0.0224090780457148
-RNA-seq within-BRIC vs array within-BRIC	-0.0502162978693389
+pooled within-BRIC vs pooled avg-over-HW	0.207359244791567
+pooled avg-over-HW vs RNA-seq avg-over-HW	0.887198207821094
+pooled within-BRIC vs array within-BRIC	-0.0228150661258273
+RNA-seq within-BRIC vs array within-BRIC	-0.0506867668841781

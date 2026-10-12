@@ -50,7 +50,8 @@ keep <- cpm_keep(CC)
 dge <- calcNormFactors(DGEList(counts = CC)[keep, , keep.lib.sizes = FALSE], method = "TMM")
 say(sprintf("  genes measured in all 11 studies: %d; after CPM filter: %d (zero-filled fit: 25,453)", nrow(CC), nrow(dge)))
 X1 <- drop_aliased(model.matrix(F1, m2)); r1 <- fit_voom(dge, X1, m2$osd_id)
-X2 <- drop_aliased(model.matrix(F2, m2)); r2 <- fit_voom(dge, X2, m2$osd_id)
+k2 <- cc_rows(m2, F2)   # EMCS has no CFD covariates
+X2 <- drop_aliased(model.matrix(F2, m2[k2, ])); r2 <- fit_voom(dge[, k2], X2, m2$osd_id[k2])
 say(sprintf("  rho: Model 1 %.4f, Model 2 %.4f (zero-filled: 0.7327, 0.7588)", r1$rho, r2$rho))
 cc_res <- list(
   Flight_within_BRIC = tt(r1$fit, "flightFLT"),
@@ -221,8 +222,8 @@ detect_stored <- pos_control(stored); detect <- pos_control(S_new)
 sd_ratio <- median(apply(S_new, 2, sd)) / median(apply(stored, 2, sd))
 say(sprintf("  positive control: stored %d/28, %d/28; rescored %d/28, %d/28 (0.25 / 0.5 SD); rescored SD is %.2f x the stored SD",
             detect_stored[1], detect_stored[2], detect[1], detect[2], sd_ratio))
-fin <- ws_new[term %in% c("flight", "scale", "flight_x_scale"), all(is.finite(se))] && ws_rna[, all(is.finite(se))]
-say("  all flight / scale / interaction SEs finite: ", fin)
+fin <- ws_new[estimable == TRUE, all(is.finite(se))] && ws_rna[estimable == TRUE, all(is.finite(se))]
+say("  SEs finite for every tested (estimable) term: ", fin)
 
 writeLines(c(log_lines, "", capture.output(sessionInfo())), file.path(OUT, "followups_log.txt"))
 
@@ -251,7 +252,7 @@ sec <- c(
   row_cmp("CFDv2_carbon_12h", "Model 2: carbon_12h"),
   "",
   sprintf("- The averaged flight effect from the complete-case fit agrees with the RNA-seq-only fit at logFC r = %.3f.", cc_vs_rna),
-  sprintf("- carbon_12h loses most of its genes (%s -> %s): carbon_12h is 1 %% for every BRIC sample and all microarray samples are BRIC, so genes that were zero-filled in the microarray studies looked like a carbon effect. g_bl goes from %s to %s.",
+  sprintf("- Without zero-filled genes, carbon_12h goes from %s to %s genes at FDR < 0.05 and g_bl from %s to %s. Neither count is a carbon or conductance effect: both covariates are confounded with study and hardware (§4, §9).",
           fmt(cmp[contrast == "CFDv2_carbon_12h"]$zero_filled_fdr05), fmt(cmp[contrast == "CFDv2_carbon_12h"]$complete_fdr05),
           fmt(cmp[contrast == "CFDv2_g_bl"]$zero_filled_fdr05), fmt(cmp[contrast == "CFDv2_g_bl"]$complete_fdr05)),
   "- Removing the zero-filled genes does not rescue either CFD covariate: they stay confounded with study and hardware by design (§4, §9). Microarray and RNA-seq values are still pooled in one voom model here, which is why §9's platform-separated fit remains the preferred analysis.",
