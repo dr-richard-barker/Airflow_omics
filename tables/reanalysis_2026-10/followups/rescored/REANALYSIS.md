@@ -34,9 +34,21 @@ g_bl per cell, old -> new: earth/leaf 1.000 -> 0.997; earth/rosette 0.540 -> 0.5
 
 Not updated because their LunarLeaf source tables were not regenerated: co2_drawdown_* / o2_buildup_* (T5), net_assimilation_pct (T12).
 
+OSDR hardware -> CFD class (`extract_cfd.py`). APEX-TAGES is folded into BRIC and EMCS into VEGGIE, so every CFD covariate for them, including the ground-control carbon value, is the class value:
+
+| hardware | cfd_hardware | studies | n |
+|---|---|---|---|
+| APEX-TAGES | BRIC | OSD-7 | 36 |
+| BRIC | BRIC | OSD-147, OSD-17, OSD-205, OSD-321, OSD-37, OSD-38 | 170 |
+| CARA | CARA | OSD-120 | 36 |
+| EMCS | VEGGIE | OSD-314 | 17 |
+| Veggie | VEGGIE | OSD-217, OSD-678 | 48 |
+
+TODO: confirm that the APEX-TAGES (OSD-7) ground controls were sealed like BRIC's, and whether EMCS (OSD-314) is adequately represented by the vented VEGGIE scenario.
+
 ## 3. Original method (Pearson, n = 307, BH)
 
-Reproduces the stored `pathway_cfd_correlations.tsv`: 84/84 rows matched, max |Δr| = 6.33e-01.
+Differs from the stored `pathway_cfd_correlations.tsv` (these are not the stored scores): 84/84 pathway x covariate rows compared, max |Δr| = 6.33e-01.
 
 - `g_bl_mol_m2_s`: FDR < 0.05 in 8/28 pathways with old covariates, 7/28 with new; max |r| 0.210 -> 0.217.
 - `carbon_12h_pct_earth`: FDR < 0.05 in 13/28 pathways with old covariates, 0/28 with new; max |r| 0.354 -> 0.005.

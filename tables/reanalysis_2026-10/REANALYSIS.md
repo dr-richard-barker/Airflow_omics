@@ -17,7 +17,7 @@ Columns that do not reproduce:
 
 All expected, from deliberate changes to extract_cfd.py:
 
-- `carbon_12h_pct_earth`: BRIC ground controls use the same sealed hardware, so they get T11's BRIC value, not 100 % (2026-10-08)
+- `carbon_12h_pct_earth`: BRIC ground controls use the same sealed hardware, so they get T11's BRIC value, not 100 % (2026-10-08). The CFD class BRIC includes APEX-TAGES (OSD-7), whose 18 ground controls get the same value; TODO: confirm they were sealed
 - `A_start_umol_m2_s`: as carbon_12h_pct_earth: BRIC ground controls now carry T11's BRIC values (2026-10-08)
 - `A_end_umol_m2_s`: as carbon_12h_pct_earth: BRIC ground controls now carry T11's BRIC values (2026-10-08)
 - `earth_equiv_fan_cm_s`: read from T9 instead of hard-coded 2.8 / 11.0 cm/s (2026-10-07)
@@ -53,9 +53,21 @@ g_bl per cell, old -> new: earth/leaf 1.000 -> 0.997; earth/rosette 0.540 -> 0.5
 
 Not updated because their LunarLeaf source tables were not regenerated: co2_drawdown_* / o2_buildup_* (T5), net_assimilation_pct (T12).
 
+OSDR hardware -> CFD class (`extract_cfd.py`). APEX-TAGES is folded into BRIC and EMCS into VEGGIE, so every CFD covariate for them, including the ground-control carbon value, is the class value:
+
+| hardware | cfd_hardware | studies | n |
+|---|---|---|---|
+| APEX-TAGES | BRIC | OSD-7 | 36 |
+| BRIC | BRIC | OSD-147, OSD-17, OSD-205, OSD-321, OSD-37, OSD-38 | 170 |
+| CARA | CARA | OSD-120 | 36 |
+| EMCS | VEGGIE | OSD-314 | 17 |
+| Veggie | VEGGIE | OSD-217, OSD-678 | 48 |
+
+TODO: confirm that the APEX-TAGES (OSD-7) ground controls were sealed like BRIC's, and whether EMCS (OSD-314) is adequately represented by the vented VEGGIE scenario.
+
 ## 3. Original method (Pearson, n = 307, BH)
 
-Reproduces the stored `pathway_cfd_correlations.tsv`: 84/84 rows matched, max |Δr| = 7.77e-16.
+Reproduces the stored `pathway_cfd_correlations.tsv`: 84/84 rows matched, max |Δr| = 1.11e-16.
 
 - `g_bl_mol_m2_s`: FDR < 0.05 in 28/28 pathways with old covariates, 28/28 with new; max |r| 0.467 -> 0.431.
 - `carbon_12h_pct_earth`: FDR < 0.05 in 27/28 pathways with old covariates, 27/28 with new; max |r| 0.294 -> 0.585.
@@ -212,12 +224,13 @@ Within-study model (`score ~ study + flight × scale`, CR1 by study, BH per term
 | scores | flight | scale | flight × scale |
 |---|---|---|---|
 | stored (zero-filled, pooled z) — §5 | 0 | 0 | 0 |
-| rescored, all 11 studies | 0 | 0 | 0 |
-| rescored, RNA-seq studies only (7) | 0 | 0 | 0 |
+| rescored, all 11 studies | 0 | 3 | 0 |
+| rescored, RNA-seq studies only (7) | 0 | not estimable | 0 |
 
 - Flight t-statistics from the stored and rescored scores correlate at r = 0.635. Smallest rescored flight p: cytokinin_signaling (p = 0.023, FDR = 0.4).
 - Positive control (as in §5: a flight effect of 0.25 / 0.5 × the median score SD planted in every pathway): stored scores 28/28 and 28/28 (reproducing §5), rescored 8/28 and 15/28. The rescored SD is 0.43 × the stored SD because the stored scores' SD includes between-study and between-platform differences; relative to within-study variation, the §5 control planted larger effects than its label suggests.
-- **Reading:** with corrected scores no pathway term reaches FDR < 0.05, as in §5. But the corrected positive control shows the within-study test detects a 0.25 SD flight effect in only about a quarter of pathways and a 0.5 SD effect in about half, so the pathway-level null now reads as 'no large, consistent flight effect' rather than 'no effect'; effects below about half a within-study SD cannot be excluded at this sample of 11 studies. §5's statement that the null 'is not a powerless test' should be read with this correction. The §8 meta-regression and the §7 in-dish analysis still use the stored scores; rerunning them on `pathway_scores_within_study.tsv` is the next step if the pathway scores are to be carried into the paper.
+- A term is tested only if it varies within at least two studies; otherwise, with study fixed effects, it is identified by a single cluster and cluster-robust errors collapse (as for CARA in §7). Among the RNA-seq studies only OSD-678 has both leaf and rosette samples, so scale is not testable there (not estimable); flight × scale still varies within every study and is tested.
+- **Reading:** with corrected scores no pathway reaches FDR < 0.05 for flight, as in §5; 3 pathway(s) now show a scale (rosette vs leaf) difference (ethylene_biosynthesis, ja_signaling, gravitropism_signaling). But the corrected positive control shows the within-study test detects a 0.25 SD flight effect in only about a quarter of pathways and a 0.5 SD effect in about half, so the pathway-level null now reads as 'no large, consistent flight effect' rather than 'no effect'; effects below about half a within-study SD cannot be excluded at this sample of 11 studies. §5's statement that the null 'is not a powerless test' should be read with this correction. §11 reruns the §7 in-dish analysis and the §8 meta-regression on these scores.
 
 ## 11. §5, §7 and §8 on the rescored pathway scores
 

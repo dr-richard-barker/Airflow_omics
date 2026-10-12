@@ -108,9 +108,10 @@ def main():
     ]
     rpath = os.path.join(MAIN, "REANALYSIS.md")
     text = open(rpath).read()
-    text = re.sub(r"\n## 11\. §5, §7 and §8 on the rescored.*?(?=\n## 12\. |\n## Not done here|\Z)", "", text, flags=re.S)
+    text = re.sub(r"\n## 11\. .*?(?=\n## \d+\. |\n## Not done here|\Z)", "", text, flags=re.S)
     block = "\n".join(lines)
-    marker = "\n## 12. " if "\n## 12. " in text else "\n## Not done here"
+    higher = [int(k) for k in re.findall(r"\n## (\d+)\. ", text) if int(k) > 11]
+    marker = f"\n## {min(higher)}. " if higher else "\n## Not done here"
     text = text.replace(marker, "\n" + block + marker, 1) if marker in text else text + "\n" + block
     open(rpath, "w").write(text)
     print(block)

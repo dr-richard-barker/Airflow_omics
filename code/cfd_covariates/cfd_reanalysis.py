@@ -31,6 +31,7 @@ Biomni workspace.
     python3 code/cfd_covariates/cfd_reanalysis.py
 """
 import os
+import re
 import sys
 
 import warnings
@@ -202,7 +203,7 @@ def main():
             by_design = {
                 "earth_equiv_fan_cm_s": "read from T9 instead of hard-coded 2.8 / 11.0 cm/s (2026-10-07)",
                 "fan_cm_s": "VEGGIE fan is the modelled 8.3 cm/s, not the Earth-equivalent 2.8 (2026-10-07)",
-                "carbon_12h_pct_earth": "BRIC ground controls use the same sealed hardware, so they get T11's BRIC value, not 100 % (2026-10-08)",
+                "carbon_12h_pct_earth": "BRIC ground controls use the same sealed hardware, so they get T11's BRIC value, not 100 % (2026-10-08). The CFD class BRIC includes APEX-TAGES (OSD-7), whose 18 ground controls get the same value; TODO: confirm they were sealed",
                 "A_start_umol_m2_s": "as carbon_12h_pct_earth: BRIC ground controls now carry T11's BRIC values (2026-10-08)",
                 "A_end_umol_m2_s": "as carbon_12h_pct_earth: BRIC ground controls now carry T11's BRIC values (2026-10-08)",
             }
@@ -230,6 +231,13 @@ def main():
     log("\ng_bl per cell, old -> new: " + "; ".join(f"{k[0]}/{k[1]} {g_old[k]:.3f} -> {g[k]:.3f}" for k in g.index))
     log("\nNot updated because their LunarLeaf source tables were not regenerated: "
         "co2_drawdown_* / o2_buildup_* (T5), net_assimilation_pct (T12).\n")
+    hwmap = (meta.groupby(["hardware", "cfd_hardware"])
+             .agg(studies=("osd_id", lambda x: ", ".join(sorted(x.unique()))), n=("osd_id", "size")).reset_index())
+    log("OSDR hardware -> CFD class (`extract_cfd.py`). APEX-TAGES is folded into BRIC and EMCS into VEGGIE, so "
+        "every CFD covariate for them, including the ground-control carbon value, is the class value:\n")
+    log(md(hwmap))
+    log("\nTODO: confirm that the APEX-TAGES (OSD-7) ground controls were sealed like BRIC's, and whether EMCS (OSD-314) "
+        "is adequately represented by the vented VEGGIE scenario.\n")
 
     # 4. original Pearson method: validate, then rerun on new covariates
     covs = ["g_bl_mol_m2_s", "carbon_12h_pct_earth", "delta_mm"]
@@ -242,7 +250,11 @@ def main():
     chk = stored.merge(p_old, on=["pathway", "cfd_covariate"], suffixes=("_stored", "_rebuilt"))
     max_dr = float(np.max(np.abs(chk.correlation_stored - chk.correlation_rebuilt)))
     log("## 3. Original method (Pearson, n = 307, BH)\n")
-    log(f"Reproduces the stored `pathway_cfd_correlations.tsv`: {len(chk)}/{len(stored)} rows matched, max |Δr| = {max_dr:.2e}.\n")
+    if max_dr < 1e-6:
+        log(f"Reproduces the stored `pathway_cfd_correlations.tsv`: {len(chk)}/{len(stored)} rows matched, max |Δr| = {max_dr:.2e}.\n")
+    else:  # expected when PATHWAY_SCORES points at rescored scores
+        log(f"Differs from the stored `pathway_cfd_correlations.tsv` (these are not the stored scores): {len(chk)}/{len(stored)} "
+            f"pathway x covariate rows compared, max |Δr| = {max_dr:.2e}.\n")
     p_new = pearson_table(new_df, pathways, covs)
     p_new.to_csv(os.path.join(OUT, "pathway_cfd_correlations_v2_pearson.tsv"), sep="\t", index=False)
     for cv in covs:
@@ -400,7 +412,14 @@ def main():
     for line in dish_section:
         log(line)
     log("\n## Not done here\n\nThe gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`), its follow-ups §10 (`followups_2026-10.R`), the rescored §5/§7/§8 comparison §11 (`code/cfd_covariates/rescored_comparison.py`) and the variance partition §12 (`variance_partition_2026-10.R`); run them in that order after `cfd_meta_regression.py`. No analysis items from this reanalysis remain open. Open for the authors: the headline claim, and whether the RNA-seq vs microarray difference in the flight response (§9) is reported as a finding.")
-    open(os.path.join(OUT, "REANALYSIS.md"), "w").write("\n".join(report) + "\n")
+    # keep sections written later by other scripts (§9 onward: the R refits and §11)
+    rpath = os.path.join(OUT, "REANALYSIS.md")
+    text = "\n".join(report) + "\n"
+    if os.path.exists(rpath):
+        later = re.search(r"\n## (?:9|1[0-9])\. .*?(?=\n## Not done here|\Z)", open(rpath).read(), flags=re.S)
+        if later and "\n## Not done here" in text:
+            text = text.replace("\n## Not done here", later.group(0) + "\n## Not done here", 1)
+    open(rpath, "w").write(text)
     print(f"\nwrote {OUT}/")
 
 

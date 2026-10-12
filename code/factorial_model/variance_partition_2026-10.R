@@ -129,8 +129,12 @@ sec <- c(
   "")
 rpath <- "tables/reanalysis_2026-10/REANALYSIS.md"
 txt <- paste(readLines(rpath), collapse = "\n")
-txt <- sub("(?s)\n## 12\\. Variance partitioning.*?(?=\n## Not done here|$)", "", txt, perl = TRUE)
-marker <- "\n## Not done here"
+# Insert section 12 after any lower-numbered and before any higher-numbered section,
+# removing only the previous copy of section 12 (up to the next "## <number>." heading).
+txt <- sub("(?s)\n## 12\\. .*?(?=\n## [0-9]+\\. |\n## Not done here|$)", "", txt, perl = TRUE)
+nums <- as.integer(sub("^\n## ([0-9]+)\\. .*", "\\1", regmatches(txt, gregexpr("\n## [0-9]+\\. [^\n]*", txt))[[1]]))
+higher <- nums[nums > 12]
+marker <- if (length(higher)) paste0("\n## ", min(higher), ". ") else "\n## Not done here"
 block <- paste(sec, collapse = "\n")
 txt <- if (grepl(marker, txt, fixed = TRUE)) sub(marker, paste0("\n", block, marker), txt, fixed = TRUE) else paste0(txt, "\n", block)
 if (MAXG == 0) { writeLines(txt, rpath); say("updated REANALYSIS.md section 12") } else cat(block, "\n")

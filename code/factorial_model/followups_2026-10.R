@@ -134,9 +134,19 @@ within_model <- function(S, meta) {
   rbindlist(lapply(colnames(S), function(pw) {
     keep <- !is.na(S[, pw])
     X <- ws_design(meta[keep, ]); r <- ols_cluster(S[keep, pw], X, meta$osd_id[keep])
+    rk <- qr(X)$rank
     rbindlist(lapply(c("flight", "scale", "flight_x_scale"), function(term) {
       i <- match(term, colnames(X))
-      data.table(pathway = pw, term = term, estimate = r$beta[i], se = r$se[i], t = r$t[i], p_value = r$p[i],
+      # Not testable if the term is in the span of the other columns, or if it varies
+      # within fewer than 2 studies: with study fixed effects it is then identified by one
+      # cluster, and CR1 cluster-robust errors collapse toward zero (SE ~ 1e-16), the
+      # artefact §7 guards against for CARA. Report NA instead.
+      g <- meta$osd_id[keep]
+      n_var <- sum(tapply(X[, i], droplevels(factor(g)), function(x) length(unique(x)) > 1), na.rm = TRUE)
+      est <- qr(X[, -i, drop = FALSE])$rank < rk && n_var >= 2
+      data.table(pathway = pw, term = term, estimable = est,
+                 estimate = if (est) r$beta[i] else NA_real_, se = if (est) r$se[i] else NA_real_,
+                 t = if (est) r$t[i] else NA_real_, p_value = if (est) r$p[i] else NA_real_,
                  n = sum(keep), studies = length(unique(meta$osd_id[keep])))
     }))
   }))[, fdr := p.adjust(p_value, "BH"), by = term][]
@@ -176,7 +186,9 @@ rna <- m2$omics_type == "RNAseq"
 ws_rna <- within_model(S_new[rna, ], m2[rna, ])
 fwrite(ws_new, file.path(OUT, "pathway_within_study_model_rescored.tsv"), sep = "\t")
 fwrite(ws_rna, file.path(OUT, "pathway_within_study_model_rescored_rnaseq.tsv"), sep = "\t")
-cnt <- function(w) sapply(c("flight", "scale", "flight_x_scale"), function(t) sum(w[term == t]$fdr < 0.05))
+# NB: the model table has a column named `t`, so never filter with `term == t` inside [ ]
+cnt <- function(w) sapply(c("flight", "scale", "flight_x_scale"), function(tm) {
+  f <- w$fdr[w$term == tm]; if (all(is.na(f))) NA_integer_ else sum(f < 0.05, na.rm = TRUE) })
 counts <- rbind(stored_scores = cnt(ws_port), rescored = cnt(ws_new), rescored_rnaseq_only = cnt(ws_rna))
 print(counts)
 fl <- merge(ws_port[term == "flight", .(pathway, t_orig = t)], ws_new[term == "flight", .(pathway, t_new = t, est_new = estimate, fdr_new = fdr)], by = "pathway")
@@ -212,7 +224,7 @@ writeLines(c(log_lines, "", capture.output(sessionInfo())), file.path(OUT, "foll
 fmt <- function(x) format(x, big.mark = ",")
 row_cmp <- function(n, label) { r <- cmp[contrast == n]
   sprintf("| %s | %s | %s | %.3f | %s |", label, fmt(r$zero_filled_fdr05), fmt(r$complete_fdr05), r$logFC_cor_common, fmt(r$sig_both)) }
-cn <- function(row, t) counts[row, t]
+cn <- function(row, tm) { v <- counts[row, tm]; if (is.na(v)) "not estimable" else as.character(v) }
 sec <- c(
   "## 10. Follow-ups: no zero-filling at gene level; pathway scores recomputed",
   "",
@@ -247,20 +259,29 @@ sec <- c(
   "",
   "| scores | flight | scale | flight × scale |",
   "|---|---|---|---|",
-  sprintf("| stored (zero-filled, pooled z) — §5 | %d | %d | %d |", cn("stored_scores", "flight"), cn("stored_scores", "scale"), cn("stored_scores", "flight_x_scale")),
-  sprintf("| rescored, all 11 studies | %d | %d | %d |", cn("rescored", "flight"), cn("rescored", "scale"), cn("rescored", "flight_x_scale")),
-  sprintf("| rescored, RNA-seq studies only (7) | %d | %d | %d |", cn("rescored_rnaseq_only", "flight"), cn("rescored_rnaseq_only", "scale"), cn("rescored_rnaseq_only", "flight_x_scale")),
+  sprintf("| stored (zero-filled, pooled z) — §5 | %s | %s | %s |", cn("stored_scores", "flight"), cn("stored_scores", "scale"), cn("stored_scores", "flight_x_scale")),
+  sprintf("| rescored, all 11 studies | %s | %s | %s |", cn("rescored", "flight"), cn("rescored", "scale"), cn("rescored", "flight_x_scale")),
+  sprintf("| rescored, RNA-seq studies only (7) | %s | %s | %s |", cn("rescored_rnaseq_only", "flight"), cn("rescored_rnaseq_only", "scale"), cn("rescored_rnaseq_only", "flight_x_scale")),
   "",
   sprintf("- Flight t-statistics from the stored and rescored scores correlate at r = %.3f. Smallest rescored flight p: %s (p = %.2g, FDR = %.2g).",
           t_cor, top$pathway[1], top$p_value[1], top$fdr[1]),
   sprintf("- Positive control (as in §5: a flight effect of 0.25 / 0.5 × the median score SD planted in every pathway): stored scores %d/28 and %d/28 (reproducing §5), rescored %d/28 and %d/28. The rescored SD is %.2f × the stored SD because the stored scores' SD includes between-study and between-platform differences; relative to within-study variation, the §5 control planted larger effects than its label suggests.",
           detect_stored[1], detect_stored[2], detect[1], detect[2], sd_ratio),
-  "- **Reading:** with corrected scores no pathway term reaches FDR < 0.05, as in §5. But the corrected positive control shows the within-study test detects a 0.25 SD flight effect in only about a quarter of pathways and a 0.5 SD effect in about half, so the pathway-level null now reads as 'no large, consistent flight effect' rather than 'no effect'; effects below about half a within-study SD cannot be excluded at this sample of 11 studies. §5's statement that the null 'is not a powerless test' should be read with this correction. The §8 meta-regression and the §7 in-dish analysis still use the stored scores; rerunning them on `pathway_scores_within_study.tsv` is the next step if the pathway scores are to be carried into the paper.",
+  sprintf("- A term is tested only if it varies within at least two studies; otherwise, with study fixed effects, it is identified by a single cluster and cluster-robust errors collapse (as for CARA in §7). Among the RNA-seq studies only OSD-678 has both leaf and rosette samples, so scale is not testable there (%s); flight × scale still varies within every study and is tested.",
+          cn("rescored_rnaseq_only", "scale")),
+  paste0("- **Reading:** with corrected scores no pathway reaches FDR < 0.05 for flight, as in §5",
+         if (counts["rescored", "scale"] > 0) sprintf("; %d pathway(s) now show a scale (rosette vs leaf) difference (%s)", counts["rescored", "scale"],
+                                                      paste(ws_new[term == "scale" & fdr < 0.05]$pathway, collapse = ", ")) else "",
+         ". But the corrected positive control shows the within-study test detects a 0.25 SD flight effect in only about a quarter of pathways and a 0.5 SD effect in about half, so the pathway-level null now reads as 'no large, consistent flight effect' rather than 'no effect'; effects below about half a within-study SD cannot be excluded at this sample of 11 studies. §5's statement that the null 'is not a powerless test' should be read with this correction. §11 reruns the §7 in-dish analysis and the §8 meta-regression on these scores."),
   "")
 rpath <- "tables/reanalysis_2026-10/REANALYSIS.md"
 txt <- paste(readLines(rpath), collapse = "\n")
-txt <- sub("(?s)\n## 10\\. Follow-ups.*?(?=\n## Not done here|$)", "", txt, perl = TRUE)
-marker <- "\n## Not done here"
+# Insert section 10 after any lower-numbered and before any higher-numbered section,
+# removing only the previous copy of section 10 (up to the next "## <number>." heading).
+txt <- sub("(?s)\n## 10\\. .*?(?=\n## [0-9]+\\. |\n## Not done here|$)", "", txt, perl = TRUE)
+nums <- as.integer(sub("^\n## ([0-9]+)\\. .*", "\\1", regmatches(txt, gregexpr("\n## [0-9]+\\. [^\n]*", txt))[[1]]))
+higher <- nums[nums > 10]
+marker <- if (length(higher)) paste0("\n## ", min(higher), ". ") else "\n## Not done here"
 block <- paste(sec, collapse = "\n")
 txt <- if (grepl(marker, txt, fixed = TRUE)) sub(marker, paste0("\n", block, marker), txt, fixed = TRUE) else paste0(txt, "\n", block)
 writeLines(txt, rpath)
