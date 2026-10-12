@@ -215,6 +215,9 @@ for hw in HW_CFD:
             # 2026-10-08), so they get the BRIC value too, not 100 %: BRIC's carbon
             # deficit is a hardware effect shared by flight and ground.
             # TODO: CARA/VEGGIE ground-control hardware not yet confirmed; they keep 100 %.
+            # TODO: `hw` is the CFD class, so this also covers APEX-TAGES (OSD-7, 18 ground
+            # controls), mapped to BRIC above. The confirmation was for BRIC; whether the
+            # APEX-TAGES ground controls were sealed is not yet confirmed.
             if gkey == "earth" and hw != "BRIC":
                 row["carbon_12h_pct_earth"] = 100.0
             else:

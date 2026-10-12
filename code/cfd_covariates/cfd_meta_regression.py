@@ -25,6 +25,7 @@ no steady state), while VEGGIE is at steady state.
     python3 code/cfd_covariates/cfd_meta_regression.py     # needs tables/reanalysis_2026-10/ from cfd_reanalysis.py
 """
 import os
+import re
 
 import numpy as np
 import pandas as pd
@@ -163,7 +164,8 @@ def main():
     rpath = os.path.join(OUT, "REANALYSIS.md")
     text = open(rpath).read()
     block = "\n".join(lines) + "\n"
-    marker = "\n## Not done here"
+    higher = [int(k) for k in re.findall(r"\n## (\d+)\. ", text) if int(k) > 8]   # keep §8 ahead of §9+
+    marker = f"\n## {min(higher)}. " if higher else "\n## Not done here"
     text = text.replace(marker, "\n" + block + marker, 1) if marker in text else text + "\n" + block
     open(rpath, "w").write(text)
     print("\n".join(lines))

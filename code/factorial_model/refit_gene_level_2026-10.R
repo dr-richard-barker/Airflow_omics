@@ -268,9 +268,12 @@ sec <- c(
   "")
 rpath <- "tables/reanalysis_2026-10/REANALYSIS.md"
 txt <- paste(readLines(rpath), collapse = "\n")
-txt <- sub("(?s)\n## 9\\. Gene-level limma refit.*?(?=\n## 10\\. |\n## Not done here|$)", "", txt, perl = TRUE)
-# keep §9 ahead of §10 (followups_2026-10.R) when rerun
-marker <- if (grepl("\n## 10. ", txt, fixed = TRUE)) "\n## 10. " else "\n## Not done here"
+# Insert section 9 after any lower-numbered and before any higher-numbered section,
+# removing only the previous copy of section 9 (up to the next "## <number>." heading).
+txt <- sub("(?s)\n## 9\\. .*?(?=\n## [0-9]+\\. |\n## Not done here|$)", "", txt, perl = TRUE)
+nums <- as.integer(sub("^\n## ([0-9]+)\\. .*", "\\1", regmatches(txt, gregexpr("\n## [0-9]+\\. [^\n]*", txt))[[1]]))
+higher <- nums[nums > 9]
+marker <- if (length(higher)) paste0("\n## ", min(higher), ". ") else "\n## Not done here"
 block <- paste(sec, collapse = "\n")
 txt <- if (grepl(marker, txt, fixed = TRUE)) sub(marker, paste0("\n", block, marker), txt, fixed = TRUE) else paste0(txt, "\n", block)
 writeLines(txt, rpath)
