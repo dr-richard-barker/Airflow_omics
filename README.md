@@ -1,81 +1,88 @@
-# Microgravity Atmospheric Adaptation Model
+# Airflow_omics: spaceflight transcriptomes and growth-hardware airflow
 
-Multi-omics meta-analysis of NASA OSDR Arabidopsis spaceflight data integrated with CFD gas-exchange modeling, single-cell VAE deconvolution, and systems biology models of hormone and carbon allocation.
+A study-aware re-analysis of NASA OSDR *Arabidopsis thaliana* spaceflight transcriptomes, coupled to lattice-Boltzmann CFD of the BRIC, CARA and VEGGIE growth hardware ([LunarLeaf-CFD](https://github.com/dr-richard-barker/LunarLeaf-CFD)).
 
-## Overview
+## Headline
 
-This repository mines the NASA Open Science Data Repository (OSDR) for *Arabidopsis thaliana* multiomics data (RNA-seq, microarray, methylation, proteomics, glycomics) from Col-0 and WS ecotypes grown on the ISS. It builds a multi-factorial mixed-effects model (flight × hardware × organ × light × ecotype), integrates CFD gas-exchange predictions from [LunarLeaf-CFD](https://github.com/dr-richard-barker/LunarLeaf-CFD) as continuous covariates, uses a scVI variational autoencoder trained on the Shahan root atlas (GSE152766) for tissue-specific deconvolution, infers miRNA activity from mRNA targets, and produces a hormone and primary carbon allocation adaptation model.
+**Spaceflight changes Arabidopsis gene expression substantially, but differently in each experiment.**
+- Across 11 OSDR studies, a flight response shared by all studies explains under 1 % of gene variance.
+- Within BRIC hardware, only the RNA-seq studies share a reproducible flight signature.
+- Neither CFD-predicted boundary-layer conductance nor carbon supply explains which studies respond.
+- That is consistent with the CFD itself: inside a real flight dish, gravity changes leaf gas exchange far less than open-air models suggest.
 
-## Key Results
+The claim, its evidence and what it does not say are in [`reports/HEADLINE_2026-10.md`](reports/HEADLINE_2026-10.md). The full analysis is in [`tables/reanalysis_2026-10/REANALYSIS.md`](tables/reanalysis_2026-10/REANALYSIS.md) (§1–§13).
 
-- **451 spaceflight samples** across 16 NASA OSDR studies, harmonized to 307 expression-profiled samples (30,831 genes)
-- **Hardware dominates over flight**: CARA vs BRIC shows 7,675 downregulated genes vs 264 for flight itself
-- **CFD gas-exchange modeling**: BRIC limits carbon fixation to ~1% Earth rates in µg; Veggie maintains ~100%
-- **Boundary layer conductance** negatively correlates with photosynthesis (r=-0.467), auxin (r=-0.372), ABA (r=-0.352), JA (r=-0.358) — all FDR < 10⁻⁹
-- **scVI VAE deconvolution**: 13 root cell types identified from 6,433 single cells; 307 bulk samples deconvolved
-- **miRNA inference**: miR164/167/159 targets suppressed in CARA vs BRIC, implicating auxin/ABA regulation
-- **28 pathway gene sets** scored across all samples; 154 significant pathway changes (FDR<0.05)
+## Key results
+
+| | Result | Source |
+|---|---|---|
+| Data | 307 expression samples (153 flight, 154 ground) from 11 OSDR studies: 213 RNA-seq (7 studies) and 94 microarray (4 studies). | `tables/reanalysis_2026-10/expression_metadata_with_cfd_v2.tsv` |
+| Study-specific response | A flight effect common to all studies explains 0.3 % of gene variance (0.6 % in RNA-seq alone); study-specific flight effects 8–12 %; study 45–53 %. | REANALYSIS §12 |
+| Flight contrasts | The stored "flight main effect" is the flight effect within BRIC (11,675 genes at FDR < 0.05). Averaged over BRIC, CARA and VEGGIE it is 4,598 genes. | §6, §9 |
+| Platform | BRIC RNA-seq studies agree with each other (median r = 0.40). The BRIC microarray studies agree with nothing (median r ≈ 0) and detect almost no flight genes. | §13 |
+| CFD covariates | g_bl takes one value per gravity × organ-scale cell. Study membership explains 99.9 % of carbon_12h's variance. Neither is identifiable from study and hardware. | §4, §9 |
+| Pathways | 0/28 pathways show a flight effect or a CFD dose-response in study-aware models, on correctly computed scores. The tests rule out only large effects. | §10, §11 |
+| CFD | In the real BRIC and CARA dishes, gravity changes leaf conductance 1.25–1.8-fold (2.25-fold in an open box). Sealed BRIC dishes become carbon-limited at 1 g as well as in orbit. | LunarLeaf-CFD T19–T22, §7 |
+
+**Superseded results.** The August 2026 draft reported strong CFD–pathway correlations, "hardware dominates over flight" and a 7.1 % hardware variance share. These do not survive the re-analysis; `reports/HEADLINE_2026-10.md` lists each claim and its status.
+
+**Kept for the record, but don't cite:**
+- the stored outputs from that pipeline in `tables/`: `de_results_*.tsv`, `pathway_*.tsv`, `variance_partition_summary.tsv`;
+- `figures/fig*.png`.
 
 ## Structure
 
 ```
 Airflow_omics/
 ├── code/
-│   ├── osdr_miner/           # OSDR API mining + harmonization scripts
-│   │   ├── mine_osdr.py
-│   │   ├── enrich_metadata.py
-│   │   ├── finalize_metadata.py
-│   │   ├── download_data.py
-│   │   └── build_harmonized_matrix.py
-│   ├── factorial_model/      # limma-voom mixed-effects model
-│   │   └── fit_factorial_model.R
-│   ├── cfd_covariates/       # CFD covariate extraction from LunarLeaf-CFD
-│   │   └── extract_cfd.py
-│   ├── sc_vae_deconv/        # scVI VAE training + NNLS deconvolution
-│   │   ├── train_vae_deconvolve.py
-│   │   └── run_vae_deconv.py
-│   ├── mirna_inference/      # miRNA target inference from mRNA DE
-│   │   └── infer_mirna_targets.py
-│   └── systems_biology/      # Hormone/carbon pathway scoring (GSVA-like)
-│       └── hormone_carbon_model.py
-├── figures/                  # SVG and PNG figures + generation script
-│   ├── generate_figures.py   # Figure generation script
-│   └── fig1_study_overview_variance.png (etc.)
-├── manuscript/               # LaTeX manuscript sources + compiled PDF
-│   ├── manuscript.tex
-│   └── manuscript.pdf
-├── docs/                     # GitHub Pages landing page
-│   ├── index.html
-│   └── assets/
-├── CITATION.cff              # Citation info
-├── LICENSE                   # MIT license
-├── PLAN.md                   # Project design and objectives
-└── README.md                 # This overview
+│   ├── osdr_miner/            # OSDR API mining and metadata harmonisation (original pipeline)
+│   ├── cfd_covariates/        # CFD covariates from LunarLeaf-CFD, pathway re-analysis (§1–§8, §11)
+│   │   ├── extract_cfd.py
+│   │   ├── cfd_reanalysis.py
+│   │   ├── cfd_meta_regression.py
+│   │   └── rescored_comparison.py
+│   ├── factorial_model/       # limma-voom models
+│   │   ├── fit_factorial_model.R           # original pipeline
+│   │   ├── osdr_helpers_2026-10.R          # shared loaders for the 2026-10 refits
+│   │   ├── refit_gene_level_2026-10.R      # §9
+│   │   ├── followups_2026-10.R             # §10
+│   │   ├── variance_partition_2026-10.R    # §12
+│   │   └── platform_concordance_2026-10.R  # §13
+│   ├── figures/figures_2026-10.py          # figures/2026-10/ and the site figures
+│   ├── sc_vae_deconv/         # scVI training and NNLS deconvolution
+│   ├── mirna_inference/       # miRNA target inference from mRNA DE
+│   └── systems_biology/       # pathway gene sets and scoring
+├── tables/reanalysis_2026-10/ # REANALYSIS.md and every table it cites
+├── reports/                   # HEADLINE_2026-10.md; CFD_comparison_chamber_model.md
+├── figures/2026-10/           # current figures; figures/fig*.png are the superseded August set
+├── manuscript/                # LaTeX manuscript and compiled PDF
+└── docs/                      # GitHub Pages landing page
 ```
 
-## Requirements
+## Reproduce
 
-- Python 3.10+ (pandas, numpy, scipy, scvi-tools, scanpy, torch, matplotlib, seaborn, statsmodels)
-- R 4.3+ (limma, edgeR, variancePartition, Seurat, anndata)
-- LaTeX (texlive-latex-base, texlive-latex-extra)
+The OSDR processed files are downloaded outside the repo, to `~/Documents/Airflow_omics_osdr_data/raw_osdr/`. A `MANIFEST.json` there records the URL and SHA-256 of each file. Run from the repo root, in order:
 
-## Usage
+1. `python3 code/cfd_covariates/cfd_reanalysis.py`. Set `LUNARLEAF_TABLES` (and optionally `LUNARLEAF_OLD_TABLES`) to point at the LunarLeaf-CFD tables.
+2. `python3 code/cfd_covariates/cfd_meta_regression.py`
+3. `Rscript code/factorial_model/refit_gene_level_2026-10.R`. Set `OSDR_RAW` to point at the downloaded files.
+4. `Rscript code/factorial_model/followups_2026-10.R`
+5. Rerun steps 1 and 2 with `REANALYSIS_OUT=tables/reanalysis_2026-10/followups/rescored` and `PATHWAY_SCORES=tables/reanalysis_2026-10/followups/pathway_scores_within_study.tsv`, then `python3 code/cfd_covariates/rescored_comparison.py`.
+6. `Rscript code/factorial_model/variance_partition_2026-10.R`
+7. `Rscript code/factorial_model/platform_concordance_2026-10.R`
+8. `python3 code/figures/figures_2026-10.py`
 
-1. `code/osdr_miner/mine_osdr.py` — Mine OSDR API and build harmonized metadata
-2. `code/cfd_covariates/extract_cfd.py` — Extract CFD gas-exchange covariates from LunarLeaf-CFD
-3. `code/factorial_model/fit_factorial_model.R` — Fit limma-voom mixed-effects model (2 models, 34 contrasts)
-4. `code/sc_vae_deconv/run_vae_deconv.py` — Train scVI VAE and deconvolve bulk samples
-5. `code/mirna_inference/infer_mirna_targets.py` — Infer miRNA activity from mRNA DE results
-6. `code/systems_biology/hormone_carbon_model.py` — Score 28 hormone/carbon pathways, test differential activity
-7. `figures/generate_figures.py` — Generate all 8 main figures (SVG + PNG)
-8. `manuscript/manuscript.tex` — Compile with pdflatex
+Requirements:
+- **Python 3.10+:** pandas, numpy, scipy, matplotlib.
+- **R 4.3+:** limma, edgeR, data.table, variancePartition.
+- **TeX Live,** to build the manuscript. Build from `manuscript/` with `TEXINPUTS=..:` so that `figures/` resolves.
 
-## Data Sources
+## Data sources
 
 - NASA OSDR: https://osdr.nasa.gov/bio/repo/
 - LunarLeaf-CFD: https://github.com/dr-richard-barker/LunarLeaf-CFD
+- Shahan root atlas: GEO GSE152766, used for the deconvolution
 - virtual-root: https://github.com/dr-richard-barker/virtual-root
-- Shahan root atlas: GSE152766 (GEO)
 
 ## License
 
@@ -85,10 +92,10 @@ Airflow_omics/
 ## Citation
 
 ```bibtex
-@software{barker2026microgravity,
-  title={Computational fluid dynamics-guided multi-omics meta-analysis of Arabidopsis spaceflight adaptation},
+@software{barker2026airflowomics,
+  title={Airflow_omics: spaceflight transcriptomes and growth-hardware airflow},
   author={Barker, Richard},
   year={2026},
-  url={https://github.com/dr-richard-barker/microgravity_atmospheric_adaptation}
+  url={https://github.com/dr-richard-barker/Airflow_omics}
 }
 ```
