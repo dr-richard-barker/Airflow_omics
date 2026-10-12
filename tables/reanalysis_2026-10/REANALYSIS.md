@@ -217,7 +217,7 @@ So the original pipeline **set unmeasured genes to 0**: of 30,833 genes in the o
 - Reproduction: the original recipe (log2(x + 1) of the zero-filled matrix, genes z-scored across all 307 samples) applied to the rebuilt matrix reproduces `pathway_scores_gsva.tsv` (max |difference| 5.3e-03; minimum per-pathway r 1.000000). That recipe log-transforms the microarray values a second time, and its z-scores mix platforms and studies, so pathway scores carry the same zero-filling artefact as the gene matrix.
 - An R port of the §5 within-study model matches `cfd_reanalysis.py` on the stored scores (max |Δ estimate| 4.8e-15, max |Δ p| 2.2e-13).
 - The gene sets in `hormone_carbon_model.py` repeat 63 gene entries within their own set (in 20 of 28 pathways); the original scores count a repeated gene more than once. The worst case is AT5G52640 in heat_shock: 21 of its 32 entries, so the stored heat_shock score is mostly that one gene. The rescored version counts each gene once (`pathway_genesets.tsv`; repeats in `pathway_geneset_repeats.tsv`).
-- Curation check against UniProt: AT4G21840 is removed from heat_shock (MSRB8, peptide methionine sulfoxide reductase B8; not a heat shock protein; UniProt O49707). The rescored scores apply this (`pathway_geneset_corrections.tsv`); heat_shock is left with 9 genes, all heat shock chaperones, and still lacks the heat shock factors and HSP101.
+- Gene-set curation (UniProt-checked; `pathway_geneset_corrections.tsv`, applied to the rescored scores only): AT4G21840 removed (MSRB8, peptide methionine sulfoxide reductase B8; not a heat shock protein); 12 genes added to heat_shock (HSFA1a, HSFA1b, HSFA1d, HSFA1e, HSFA2, HSFA3, HSFA7a, HSFA7b, HSFB1, HSFB2a, HSFB2b, HSP101 (CLPB1)). heat_shock now has 21 genes, of which 17 are measured in every study (`pathway_gene_coverage_by_study.tsv`).
 - Rescored per study: RNA-seq as log2-CPM from RSEM expected counts (TMM, `filterByExpr`), microarray on its published log2 scale, each gene z-scored within its study, no zero-filling. 0 of 308 pathway × study cells have fewer than 3 measured genes and are left missing (`pathway_gene_coverage_by_study.tsv`).
 
 Within-study model (`score ~ study + flight × scale`, CR1 by study, BH per term), pathways with FDR < 0.05 out of 28:
@@ -228,7 +228,7 @@ Within-study model (`score ~ study + flight × scale`, CR1 by study, BH per term
 | rescored, all 11 studies | 0 | 3 | 0 |
 | rescored, RNA-seq studies only (7) | 0 | not estimable | 0 |
 
-- Flight t-statistics from the stored and rescored scores correlate at r = 0.636. Smallest rescored flight p: cytokinin_signaling (p = 0.023, FDR = 0.4).
+- Flight t-statistics from the stored and rescored scores correlate at r = 0.634. Smallest rescored flight p: cytokinin_signaling (p = 0.023, FDR = 0.4).
 - Positive control (as in §5: a flight effect of 0.25 / 0.5 × the median score SD planted in every pathway): stored scores 28/28 and 28/28 (reproducing §5), rescored 8/28 and 15/28. The rescored SD is 0.43 × the stored SD because the stored scores' SD includes between-study and between-platform differences; relative to within-study variation, the §5 control planted larger effects than its label suggests.
 - A term is tested only if it varies within at least two studies; otherwise, with study fixed effects, it is identified by a single cluster and cluster-robust errors collapse (as for CARA in §7). Among the RNA-seq studies only OSD-678 has both leaf and rosette samples, so scale is not testable there (not estimable); flight × scale still varies within every study and is tested.
 - **Reading:** with corrected scores no pathway reaches FDR < 0.05 for flight, as in §5; 3 pathway(s) now show a scale (rosette vs leaf) difference (ethylene_biosynthesis, ja_signaling, gravitropism_signaling). But the corrected positive control shows the within-study test detects a 0.25 SD flight effect in only about a quarter of pathways and a 0.5 SD effect in about half, so the pathway-level null now reads as 'no large, consistent flight effect' rather than 'no effect'; effects below about half a within-study SD cannot be excluded at this sample of 11 studies. §5's statement that the null 'is not a powerless test' should be read with this correction. §11 reruns the §7 in-dish analysis and the §8 meta-regression on these scores.
@@ -247,7 +247,7 @@ The same scripts (`cfd_reanalysis.py`, `cfd_meta_regression.py`) rerun with `PAT
 | §8 Knapp–Hartung meta-regression (FDR < 0.05 of 28) | 1 (ga_biosynthesis) | 0 (none) |
 | §8 positive control (detected of 28) | 24 | 20 |
 
-- Per-pathway flight t-statistics (§5) correlate at r = 0.64 between stored and rescored scores; meta-regression slopes (§8) at r = 0.33.
+- Per-pathway flight t-statistics (§5) correlate at r = 0.63 between stored and rescored scores; meta-regression slopes (§8) at r = 0.33.
 - §8's one stored hit, ga_biosynthesis (Knapp–Hartung p = 0.00082), has p = 0.0067 (FDR = 0.094) on the rescored scores. Its stored score repeats 4 gene(s) in its set and includes zero-filled genes, and the VEGGIE-vs-sealed-hardware signal reported in §8 does not survive correct scoring.
 - The rescored scores show a scale (rosette vs leaf) difference in 3 pathway(s), consistent with organ composition once study and platform scale differences are removed.
 - **Reading:** on correctly scored pathways, neither the all-study model (§5) nor the meta-regression (§8) finds a flight effect or a CFD dose-response at FDR < 0.05; the in-dish subset (§7: 5 studies, t on 4 df) flags 1 pathway(s) for flight (auxin_biosynthesis), which is a single hit among 28 on a small subset and is not replicated in §5. The positive controls show the pathway-level tests can only rule out large effects. The pathway results support 'no large, consistent pathway-level flight response across these 11 studies', not a boundary-layer mechanism; the CARA-specific flight response remains untestable (one study).
@@ -280,6 +280,49 @@ Percent of each gene's variance, mean / median across genes:
 - Genes with more than 10 % of their variance in the flight effect common to all studies: 10 of 17,129 (pooled) and 71 of 23,531 (RNA-seq); in flight × study: 4,597 and 8,899.
 - Hardware and flight × hardware are estimated from only 3 hardware groups, so their split from the study components is imprecise; read study + hardware, and the three flight terms, as totals.
 
+## 13. RNA-seq vs microarray: platform or study?
+
+`code/factorial_model/platform_concordance_2026-10.R`. Tables: `followups/platform_concordance_*`.
+
+§9 found the RNA-seq and microarray flight effects within BRIC uncorrelated (logFC r = −0.05). Platform is confounded with study and organ: the BRIC RNA-seq studies are whole seedlings, the BRIC microarray studies mostly hypocotyl, root, shoot or cell culture. Here the flight effect is estimated separately in every study × organ unit with at least 2 flight and 2 ground samples (RNA-seq: voom on expected counts; microarray: limma-trend on log2 values), and units from different studies are compared.
+
+| unit | platform | hardware | FLT / GC | genes FDR < 0.05 |
+|---|---|---|---|---|
+| OSD-321|whole_seedling | RNAseq | BRIC | 22 / 22 | 16,476 |
+| OSD-37|whole_seedling | RNAseq | BRIC | 28 / 28 |  7,381 |
+| OSD-38|whole_seedling | RNAseq | BRIC | 3 / 9 |  3,722 |
+| OSD-147|hypocotyl | microarray | BRIC | 9 / 9 |      8 |
+| OSD-17|undifferentiated cell culture | microarray | BRIC | 6 / 6 |     12 |
+| OSD-17|whole_seedling | microarray | BRIC | 6 / 6 |      3 |
+| OSD-205|hypocotyl | microarray | BRIC | 8 / 8 |      0 |
+| OSD-7|hypocotyl | microarray | BRIC | 5 / 5 |      0 |
+| OSD-7|root | microarray | BRIC | 5 / 5 |    118 |
+| OSD-7|shoot | microarray | BRIC | 5 / 5 |     12 |
+| OSD-7|whole_seedling | microarray | BRIC | 3 / 3 |      0 |
+| OSD-120|root | RNAseq | CARA | 18 / 18 |    328 |
+| OSD-217|leaf | RNAseq | VEGGIE | 3 / 3 | 13,827 |
+| OSD-217|root | RNAseq | VEGGIE | 3 / 3 | 15,030 |
+| OSD-314|whole_seedling | RNAseq | VEGGIE | 11 / 6 |  6,455 |
+| OSD-678|leaf | RNAseq | VEGGIE | 6 / 6 |      7 |
+| OSD-678|whole_seedling | RNAseq | VEGGIE | 12 / 12 |  4,633 |
+
+Agreement of flight logFC between units from different studies (Pearson r across shared genes):
+
+| comparison | pairs | median r | range |
+|---|---|---|---|
+| BRIC, RNA-seq vs RNA-seq | 3 | 0.40 | 0.26 to 0.41 |
+| BRIC, microarray vs microarray | 21 | 0.01 | -0.21 to 0.78 |
+| BRIC, RNA-seq vs microarray | 24 | -0.03 | -0.24 to 0.30 |
+| BRIC whole seedlings, RNA-seq vs RNA-seq | 3 | 0.40 | 0.26 to 0.41 |
+| BRIC whole seedlings, RNA-seq vs microarray | 6 | -0.04 | -0.24 to 0.06 |
+| all hardware, RNA-seq vs RNA-seq | 34 | 0.09 | -0.38 to 0.57 |
+| all hardware, RNA-seq vs microarray | 72 | 0.02 | -0.24 to 0.30 |
+
+For reference, different organs within the same study agree at median r = 0.35. Spearman medians for the first three rows: 0.42, 0.01 and -0.01 (`platform_concordance_summary.tsv`).
+
+- **Finding:** within BRIC, the RNA-seq studies share a reproducible flight response (median r 0.40 between studies), but the microarray studies agree neither with each other (0.01) nor with the RNA-seq studies (-0.03; whole seedlings only: -0.04). The microarray units also detect few flight genes (median 5.5 at FDR < 0.05, against 7,381 in the BRIC RNA-seq units). The platform split in §9 is therefore weak or absent flight signal in the microarray studies, not an opposite response; it can come from the platform's lower sensitivity and smaller groups, or from the earlier flights those studies represent, and this design cannot separate the two. Across hardware, even RNA-seq studies agree poorly (median r 0.09), in line with the study-specific flight response in §12.
+- Caveats: one unit per study × organ with small groups (some 3 vs 3 or 3 vs 9), so single-pair correlations are noisy; OSD-7 is APEX-TAGES hardware filed under BRIC (§2); microarray logFCs are compressed relative to RNA-seq, which changes slopes but not correlations.
+
 ## Not done here
 
-The gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`), its follow-ups §10 (`followups_2026-10.R`), the rescored §5/§7/§8 comparison §11 (`code/cfd_covariates/rescored_comparison.py`) and the variance partition §12 (`variance_partition_2026-10.R`); run them in that order after `cfd_meta_regression.py`. No analysis items from this reanalysis remain open. Open for the authors: the headline claim, and whether the RNA-seq vs microarray difference in the flight response (§9) is reported as a finding.
+The gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`), its follow-ups §10 (`followups_2026-10.R`), the rescored §5/§7/§8 comparison §11 (`code/cfd_covariates/rescored_comparison.py`), the variance partition §12 (`variance_partition_2026-10.R`) and the platform comparison §13 (`platform_concordance_2026-10.R`); run them in that order after `cfd_meta_regression.py`. No analysis items from this reanalysis remain open. Open for the authors: the headline claim and the manuscript, README and site text that follow from it; the RNA-seq vs microarray result (§13) is to be reported as a finding.

@@ -1,0 +1,18 @@
+unit	osd	organ	platform	hardware	n_flt	n_gc	fdr05
+OSD-321|whole_seedling	OSD-321	whole_seedling	RNAseq	BRIC	22	22	16476
+OSD-37|whole_seedling	OSD-37	whole_seedling	RNAseq	BRIC	28	28	7381
+OSD-38|whole_seedling	OSD-38	whole_seedling	RNAseq	BRIC	3	9	3722
+OSD-147|hypocotyl	OSD-147	hypocotyl	microarray	BRIC	9	9	8
+OSD-17|undifferentiated cell culture	OSD-17	undifferentiated cell culture	microarray	BRIC	6	6	12
+OSD-17|whole_seedling	OSD-17	whole_seedling	microarray	BRIC	6	6	3
+OSD-205|hypocotyl	OSD-205	hypocotyl	microarray	BRIC	8	8	0
+OSD-7|hypocotyl	OSD-7	hypocotyl	microarray	BRIC	5	5	0
+OSD-7|root	OSD-7	root	microarray	BRIC	5	5	118
+OSD-7|shoot	OSD-7	shoot	microarray	BRIC	5	5	12
+OSD-7|whole_seedling	OSD-7	whole_seedling	microarray	BRIC	3	3	0
+OSD-120|root	OSD-120	root	RNAseq	CARA	18	18	328
+OSD-217|leaf	OSD-217	leaf	RNAseq	VEGGIE	3	3	13827
+OSD-217|root	OSD-217	root	RNAseq	VEGGIE	3	3	15030
+OSD-314|whole_seedling	OSD-314	whole_seedling	RNAseq	VEGGIE	11	6	6455
+OSD-678|leaf	OSD-678	leaf	RNAseq	VEGGIE	6	6	7
+OSD-678|whole_seedling	OSD-678	whole_seedling	RNAseq	VEGGIE	12	12	4633

@@ -1,2 +1,14 @@
 pathway	gene_id	action	reason	source
 heat_shock	AT4G21840	remove	MSRB8, peptide methionine sulfoxide reductase B8; not a heat shock protein	UniProt O49707
+heat_shock	AT4G17750	add	HSFA1a, heat stress transcription factor	UniProt P41151
+heat_shock	AT5G16820	add	HSFA1b, heat stress transcription factor	UniProt O81821
+heat_shock	AT1G32330	add	HSFA1d, heat stress transcription factor	UniProt Q9LQM7
+heat_shock	AT3G02990	add	HSFA1e, heat stress transcription factor	UniProt Q9SCW5
+heat_shock	AT2G26150	add	HSFA2, heat stress transcription factor	UniProt O80982
+heat_shock	AT5G03720	add	HSFA3, heat stress transcription factor	UniProt Q8GYY1
+heat_shock	AT3G51910	add	HSFA7a, heat stress transcription factor	UniProt Q9SV12
+heat_shock	AT3G63350	add	HSFA7b, heat stress transcription factor	UniProt Q9M1V5
+heat_shock	AT4G36990	add	HSFB1, heat stress transcription factor	UniProt Q96320
+heat_shock	AT5G62020	add	HSFB2a, heat stress transcription factor	UniProt Q9SCW4
+heat_shock	AT4G11660	add	HSFB2b, heat stress transcription factor	UniProt Q9T0D3
+heat_shock	AT1G74310	add	HSP101 (CLPB1), heat shock chaperone required for thermotolerance	UniProt P42730

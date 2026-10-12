@@ -89,8 +89,10 @@ GS <- split(gs_tab$gene_id, factor(gs_tab$pathway, levels = unique(gs_tab$pathwa
 # reproduction of the stored scores uses the original lists
 corr <- fread(file.path(OUT, "pathway_geneset_corrections.tsv"))
 GS_fixed <- GS
-for (k in seq_len(nrow(corr))) if (corr$action[k] == "remove")
-  GS_fixed[[corr$pathway[k]]] <- setdiff(GS_fixed[[corr$pathway[k]]], corr$gene_id[k])
+for (k in seq_len(nrow(corr))) {
+  pw <- corr$pathway[k]; g <- corr$gene_id[k]
+  GS_fixed[[pw]] <- if (corr$action[k] == "remove") setdiff(GS_fixed[[pw]], g) else union(GS_fixed[[pw]], g)
+}
 n_dup <- sum(lengths(GS) - lengths(lapply(GS, unique))); n_dup_pw <- sum(lengths(GS) > lengths(lapply(GS, unique)))
 rep_tab <- rbindlist(lapply(names(GS), function(pw) { t <- table(GS[[pw]]); data.table(pathway = pw, gene_id = names(t), times = as.integer(t), entries = length(GS[[pw]])) }))[times > 1][order(-times)]
 fwrite(rep_tab, file.path(OUT, "pathway_geneset_repeats.tsv"), sep = "\t")
@@ -259,9 +261,10 @@ sec <- c(
   sprintf("- Reproduction: the original recipe (log2(x + 1) of the zero-filled matrix, genes z-scored across all 307 samples) applied to the rebuilt matrix reproduces `pathway_scores_gsva.tsv` (max |difference| %.1e; minimum per-pathway r %.6f). That recipe log-transforms the microarray values a second time, and its z-scores mix platforms and studies, so pathway scores carry the same zero-filling artefact as the gene matrix.", repro_max, repro_cor),
   sprintf("- An R port of the §5 within-study model matches `cfd_reanalysis.py` on the stored scores (max |Δ estimate| %.1e, max |Δ p| %.1e).", port_dmax, port_pmax),
   sprintf("- The gene sets in `hormone_carbon_model.py` repeat %d gene entries within their own set (in %d of 28 pathways); the original scores count a repeated gene more than once. The worst case is %s in %s: %d of its %d entries, so the stored %s score is mostly that one gene. The rescored version counts each gene once (`pathway_genesets.tsv`; repeats in `pathway_geneset_repeats.tsv`).", n_dup, n_dup_pw, rep_tab$gene_id[1], rep_tab$pathway[1], rep_tab$times[1], rep_tab$entries[1], rep_tab$pathway[1]),
-  sprintf("- Curation check against UniProt: %s. The rescored scores apply this (`pathway_geneset_corrections.tsv`); heat_shock is left with %d genes, all heat shock chaperones, and still lacks the heat shock factors and HSP101.",
-          paste(sprintf("%s is removed from %s (%s; %s)", corr$gene_id, corr$pathway, corr$reason, corr$source), collapse = "; "),
-          length(unique(GS_fixed[["heat_shock"]]))),
+  sprintf("- Gene-set curation (UniProt-checked; `pathway_geneset_corrections.tsv`, applied to the rescored scores only): %s removed (%s); %d genes added to heat_shock (%s). heat_shock now has %d genes, of which %d are measured in every study (`pathway_gene_coverage_by_study.tsv`).",
+          paste(corr[action == "remove"]$gene_id, collapse = ", "), paste(corr[action == "remove"]$reason, collapse = "; "),
+          nrow(corr[action == "add"]), paste(sub(",.*", "", corr[action == "add"]$reason), collapse = ", "),
+          length(GS_fixed[["heat_shock"]]), min(cover["heat_shock", ])),
   sprintf("- Rescored per study: RNA-seq as log2-CPM from RSEM expected counts (TMM, `filterByExpr`), microarray on its published log2 scale, each gene z-scored within its study, no zero-filling. %d of %d pathway × study cells have fewer than 3 measured genes and are left missing (`pathway_gene_coverage_by_study.tsv`).", n_missing, length(cover)),
   "",
   "Within-study model (`score ~ study + flight × scale`, CR1 by study, BH per term), pathways with FDR < 0.05 out of 28:",
