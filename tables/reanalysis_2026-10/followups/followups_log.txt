@@ -7,7 +7,7 @@
   rebuilt vs stored scores: max |diff| = 5.33e-03, min per-pathway r = 1.000000
   R port vs cfd_reanalysis.py: max |d estimate| = 4.79e-15, max |d p| = 2.17e-13 over 84 rows
   per-study pathway coverage: 0 of 308 pathway x study cells have < 3 genes (score left NA)
-  flight t, stored vs rescored scores: r = 0.635
+  flight t, stored vs rescored scores: r = 0.636
   positive control: stored 28/28, 28/28; rescored 8/28, 15/28 (0.25 / 0.5 SD); rescored SD is 0.43 x the stored SD
   all flight / scale / interaction SEs finite: FALSE
 
