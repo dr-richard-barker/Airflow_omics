@@ -203,7 +203,9 @@ def main():
             by_design = {
                 "earth_equiv_fan_cm_s": "read from T9 instead of hard-coded 2.8 / 11.0 cm/s (2026-10-07)",
                 "fan_cm_s": "VEGGIE fan is the modelled 8.3 cm/s, not the Earth-equivalent 2.8 (2026-10-07)",
-                "carbon_12h_pct_earth": "BRIC ground controls use the same sealed hardware, so they get T11's BRIC value, not 100 % (2026-10-08)",
+                "carbon_12h_pct_earth": "BRIC ground controls use the same sealed hardware, so they get T11's BRIC value, not 100 % (2026-10-08). "
+                                        "The count includes the 18 APEX-TAGES (OSD-7) ground controls, which share the BRIC class in this rebuild; "
+                                        "the v2 table sets them back to 100 % because they were not sealed (2026-10-12)",
                 "A_start_umol_m2_s": "as carbon_12h_pct_earth: BRIC ground controls now carry T11's BRIC values (2026-10-08)",
                 "A_end_umol_m2_s": "as carbon_12h_pct_earth: BRIC ground controls now carry T11's BRIC values (2026-10-08)",
             }
@@ -264,7 +266,8 @@ def main():
     stored = pd.read_csv(os.path.join(TAB, "pathway_cfd_correlations.tsv"), sep="\t")
     chk = stored.merge(p_old, on=["pathway", "cfd_covariate"], suffixes=("_stored", "_rebuilt"))
     max_dr = float(np.max(np.abs(chk.correlation_stored - chk.correlation_rebuilt)))
-    log("## 3. Original method (Pearson, n = 307, BH)\n")
+    log("## 3. Original method (Pearson, BH; n = 307 for the stored covariates, "
+        f"{int(meta_new['g_bl_mol_m2_s'].notna().sum())} for v2, which EMCS lacks)\n")
     if max_dr < 1e-6:
         log(f"Reproduces the stored `pathway_cfd_correlations.tsv`: {len(chk)}/{len(stored)} rows matched, max |Δr| = {max_dr:.2e}.\n")
     else:  # expected when PATHWAY_SCORES points at rescored scores
@@ -338,7 +341,8 @@ def main():
         "307 samples as independent when they cluster in 11 studies.")
     log("Positive control: a flight effect planted in every pathway is detected (p < 0.05) in "
         + ", ".join(f"{v}/{len(pathways)} at {k} SD" for k, v in planted.items())
-        + (", so the null result is not a powerless test; the pathway-level flight effects are small or inconsistent "
+        + (", so on these scores the null result is not a powerless test (§10 repeats the control on correctly "
+           "computed scores, where it is weaker); the pathway-level flight effects are small or inconsistent "
            "across studies relative to between-study variation."
            if min(planted.values()) >= 0.9 * len(pathways) else
            ", so the test has limited power: flight effects below about half an SD cannot be excluded, and the null "
@@ -355,7 +359,7 @@ def main():
         sub = new_df[new_df["g_bl_dish_mol_m2_s"].notna()].copy()
         dl("## 7. In-dish covariate (LunarLeaf T19)\n")
         dl(f"`g_bl_dish` (leaf conductance to the dish's own air, in the real BRIC 60 mm / CARA 120 mm dish) is defined for "
-           f"{len(sub)} leaf samples in BRIC or CARA hardware from {sub.osd_id.nunique()} studies. It is NaN for rosette-scale "
+           f"{len(sub)} leaf-scale samples (leaf, hypocotyl, root and cell culture are mapped to leaf scale) in BRIC or CARA hardware from {sub.osd_id.nunique()} studies. It is NaN for rosette-scale "
            "and VEGGIE samples, so it is kept as a separate column rather than replacing `g_bl`.\n")
         ct = sub.groupby(["cfd_hardware", "gravity_key"]).agg(n=("osd_id", "size"), studies=("osd_id", "nunique"),
                                                             g_bl_dish=("g_bl_dish_mol_m2_s", "first"),

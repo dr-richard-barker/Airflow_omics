@@ -36,7 +36,7 @@ HW_ORDER = {"BRIC": 0, "CARA": 1, "VEGGIE": 2, "EMCS": 3}
 plt.rcParams.update({
     "font.family": "DejaVu Sans", "font.size": 9, "axes.edgecolor": MUTED, "axes.labelcolor": INK,
     "xtick.color": MUTED, "ytick.color": MUTED, "axes.spines.top": False, "axes.spines.right": False,
-    "axes.grid": False, "savefig.dpi": 200, "savefig.bbox": "tight", "savefig.facecolor": "white",
+    "axes.grid": False, "savefig.dpi": 300, "savefig.bbox": "tight", "savefig.facecolor": "white",
 })
 
 
@@ -90,7 +90,7 @@ for k, (data, col, lab) in enumerate([("pooled_complete", BLUE, "pooled ({:,} ge
     vals = [v[c] for c, _ in comp]
     ax.barh(y + (0.19 if k == 0 else -0.19), vals, height=0.36, color=col, label=lab)
     for yi, val in zip(y, vals):
-        ax.text(val + 0.8, yi + (0.19 if k == 0 else -0.19), f"{val:.1f}", va="center", fontsize=7.5, color=INK)
+        ax.text(val + 0.8, yi + (0.19 if k == 0 else -0.19), f"{val:.1f}", va="center", fontsize=8, color=INK)
 ax.set_yticks(y)
 ax.set_yticklabels([l for _, l in comp])
 ax.get_yticklabels()[5].set_fontweight("bold")
@@ -110,14 +110,14 @@ M = pd.DataFrame(np.nan, index=names, columns=names)
 for r in P.itertuples():
     M.loc[r.unit_a, r.unit_b] = M.loc[r.unit_b, r.unit_a] = r.r
 cmap = LinearSegmentedColormap.from_list("div", [ORANGE, "#EEEEEE", BLUE])
-fig, ax = plt.subplots(figsize=(6.6, 5.8))
+fig, ax = plt.subplots(figsize=(7.8, 7.0))
 im = ax.imshow(M.values, cmap=cmap, vmin=-0.8, vmax=0.8)
 lab = [f"{u.split('|')[0]} {u.split('|')[1].replace('undifferentiated cell culture', 'cell culture').replace('whole_seedling', 'seedling')}"
        for u in names]
 ax.set_xticks(range(len(names)))
 ax.set_yticks(range(len(names)))
-ax.set_xticklabels(lab, rotation=90, fontsize=7)
-ax.set_yticklabels(lab, fontsize=7)
+ax.set_xticklabels(lab, rotation=90, fontsize=8)
+ax.set_yticklabels(lab, fontsize=8)
 for i, u in enumerate(U.itertuples()):
     c = HW_COL[u.hardware]
     ax.get_yticklabels()[i].set_color(c)
@@ -126,7 +126,7 @@ for i in range(len(names)):
     for j in range(len(names)):
         v = M.values[i, j]
         if np.isfinite(v):
-            ax.text(j, i, f"{v:.2f}".replace("0.", ".").replace("-.", "−."), ha="center", va="center", fontsize=5.5,
+            ax.text(j, i, f"{v:.2f}".replace("0.", ".").replace("-.", "−."), ha="center", va="center", fontsize=8,
                     color="white" if abs(v) > 0.5 else INK)
 groups = U.groupby(["hardware", "platform"], sort=False).size()
 edge = 0
@@ -154,12 +154,12 @@ ax.axvline(0, color=MUTED, lw=0.8)
 ax.hlines(y, W.estimate - tc * W.se, W.estimate + tc * W.se, color=BLUE, lw=1.6)
 ax.plot(W.estimate, y, "o", color=BLUE, ms=5, mec="white", mew=1)
 ax.set_yticks(y)
-ax.set_yticklabels(W.pathway.str.replace("_", " "), fontsize=7.5)
+ax.set_yticklabels(W.pathway.str.replace("_", " "), fontsize=8.5)
 ax.set_xlabel("flight effect (FLT − GC), within-study SD units, 95 % CI")
 ax.set_title(f"No pathway responds to flight after accounting for study (0/{len(W)} at FDR < 0.05)",
              loc="left", fontsize=10, color=INK)
-ax.text(0.99, 0.01, f"score ~ study + flight × scale; cluster-robust SEs, {W.studies.iloc[0]} studies; smallest FDR {W.fdr.min():.2f}",
-        transform=ax.transAxes, ha="right", va="bottom", fontsize=7, color=MUTED)
+ax.text(1.0, -0.11, f"score ~ study + flight × scale; cluster-robust SEs, {W.studies.iloc[0]} studies; unadjusted 95 % CIs; smallest FDR {W.fdr.min():.2f}",
+        transform=ax.transAxes, ha="right", va="top", fontsize=8, color=MUTED)
 f4 = save(fig, "fig4_pathway_flight_effects.png")
 
 # ---- Fig 5: CFD gravity penalty, open box vs real dish ------------------------
@@ -185,7 +185,7 @@ ax.set_xlabel("leaf boundary-layer conductance g$_{bl}$ (mol m$^{-2}$ s$^{-1}$)"
 ax.set_title("Inside a flight dish, gravity changes leaf gas exchange far less than in open air",
              loc="left", fontsize=10, color=INK)
 ax.text(0.99, -0.30, "LunarLeaf-CFD T13 (open box) and T19 (dish, to the dish's own air). *Sealed 1 g value indicative only.",
-        transform=ax.transAxes, ha="right", fontsize=6.8, color=MUTED)
+        transform=ax.transAxes, ha="right", fontsize=8, color=MUTED)
 f5 = save(fig, "fig5_cfd_dish_penalty.png")
 
 os.makedirs(SITE, exist_ok=True)
