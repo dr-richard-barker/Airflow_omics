@@ -131,6 +131,12 @@ PATHWAY_GENESETS = {
 # 10 distinct genes and its curation should be reviewed.
 PATHWAY_GENESETS = {k: list(dict.fromkeys(v)) for k, v in PATHWAY_GENESETS.items()}
 
+# Curation fixes (2026-10-12, checked against UniProt). AT4G21840 is MSRB8, a peptide
+# methionine sulfoxide reductase (UniProt O49707), not a heat shock protein; the other nine
+# heat_shock genes are HSP17.6A, HSP90.1, HSP70-3/-4/-5/-8, HSP70T-1, HSC70-1 and HSP23.5.
+# The set still lacks the heat shock factors (e.g. HSFA2) and HSP101.
+PATHWAY_GENESETS["heat_shock"].remove("AT4G21840")
+
 
 def load_expression_data():
     print("Loading expression data...")
