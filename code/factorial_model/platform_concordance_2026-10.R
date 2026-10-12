@@ -133,7 +133,7 @@ sec <- c(
           format(median(U[hardware == "BRIC" & platform == "microarray"]$fdr05), big.mark = ","),
           format(median(U[hardware == "BRIC" & platform == "RNAseq"]$fdr05), big.mark = ","),
           med("all hardware, RNA-seq vs RNA-seq")),
-  "- Caveats: one unit per study × organ with small groups (some 3 vs 3 or 3 vs 9), so single-pair correlations are noisy; OSD-7 is APEX-TAGES hardware filed under BRIC (§2); microarray logFCs are compressed relative to RNA-seq, which changes slopes but not correlations.",
+  "- Caveats: one unit per study × organ with small groups (some 3 vs 3 or 3 vs 9), so single-pair correlations are noisy; OSD-7 is APEX-TAGES hardware filed under BRIC (§2); OSD-678's samples with organ 'unknown' are treated as whole seedlings, as in the original pipeline; microarray logFCs are compressed relative to RNA-seq, which changes slopes but not correlations.",
   "")
 rpath <- "tables/reanalysis_2026-10/REANALYSIS.md"
 txt <- paste(readLines(rpath), collapse = "\n")

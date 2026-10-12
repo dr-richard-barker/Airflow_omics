@@ -17,7 +17,7 @@ Columns that do not reproduce:
 
 All expected, from deliberate changes to extract_cfd.py:
 
-- `carbon_12h_pct_earth`: BRIC ground controls use the same sealed hardware, so they get T11's BRIC value, not 100 % (2026-10-08)
+- `carbon_12h_pct_earth`: BRIC ground controls use the same sealed hardware, so they get T11's BRIC value, not 100 % (2026-10-08). The count includes the 18 APEX-TAGES (OSD-7) ground controls, which share the BRIC class in this rebuild; the v2 table sets them back to 100 % because they were not sealed (2026-10-12)
 - `A_start_umol_m2_s`: as carbon_12h_pct_earth: BRIC ground controls now carry T11's BRIC values (2026-10-08)
 - `A_end_umol_m2_s`: as carbon_12h_pct_earth: BRIC ground controls now carry T11's BRIC values (2026-10-08)
 - `earth_equiv_fan_cm_s`: read from T9 instead of hard-coded 2.8 / 11.0 cm/s (2026-10-07)
@@ -71,7 +71,7 @@ OSDR hardware -> CFD class used for the v2 covariates (`extract_cfd.py`). Ground
 | EMCS | EMCS | OSD-314 | 17 |
 | Veggie | VEGGIE | OSD-217, OSD-678 | 48 |
 
-## 3. Original method (Pearson, n = 307, BH)
+## 3. Original method (Pearson, BH; n = 307 for the stored covariates, 290 for v2, which EMCS lacks)
 
 Reproduces the stored `pathway_cfd_correlations.tsv`: 84/84 rows matched, max |Δr| = 1.11e-16.
 
@@ -101,7 +101,7 @@ Design rank, 290 samples with g_bl (17 without, excluded): study + flight × sca
 - **flight_x_scale**: FDR < 0.05 in 0/28 pathways.
 
 For comparison, the same model with naive (independent-sample) SEs calls the flight term significant in 7/28 pathways at Bonferroni 0.05: the original significance comes from treating 307 samples as independent when they cluster in 11 studies.
-Positive control: a flight effect planted in every pathway is detected (p < 0.05) in 28/28 at 0.25 SD, 28/28 at 0.5 SD, so the null result is not a powerless test; the pathway-level flight effects are small or inconsistent across studies relative to between-study variation.
+Positive control: a flight effect planted in every pathway is detected (p < 0.05) in 28/28 at 0.25 SD, 28/28 at 0.5 SD, so on these scores the null result is not a powerless test (§10 repeats the control on correctly computed scores, where it is weaker); the pathway-level flight effects are small or inconsistent across studies relative to between-study variation.
 
 Of the 28 pathways 'significant' for g_bl by Pearson, 0 have any FDR < 0.05 term (flight, scale or interaction) once within-study structure and clustering are respected.
 
@@ -111,7 +111,7 @@ Of the 28 pathways 'significant' for g_bl by Pearson, 0 have any FDR < 0.05 term
 - `CFD_g_bl` (logFC per 1 mol m⁻² s⁻¹; the covariate spans only 0.709, SD 0.253): |logFC| > 1 & FDR < 0.05 → 3633 genes. The same genes per 1 SD of g_bl: |logFC·SD| > 1 → 813; per full observed range: 3010. The cutoff counts depend on the unit chosen, so for a continuous covariate report FDR plus an effect size per SD or per observed range.
 ## 7. In-dish covariate (LunarLeaf T19)
 
-`g_bl_dish` (leaf conductance to the dish's own air, in the real BRIC 60 mm / CARA 120 mm dish) is defined for 97 leaf samples in BRIC or CARA hardware from 5 studies. It is NaN for rosette-scale and VEGGIE samples, so it is kept as a separate column rather than replacing `g_bl`.
+`g_bl_dish` (leaf conductance to the dish's own air, in the real BRIC 60 mm / CARA 120 mm dish) is defined for 97 leaf-scale samples (leaf, hypocotyl, root and cell culture are mapped to leaf scale) in BRIC or CARA hardware from 5 studies. It is NaN for rosette-scale and VEGGIE samples, so it is kept as a separate column rather than replacing `g_bl`.
 
 | cfd_hardware | gravity_key | n | studies | g_bl_dish | g_bl_open_box | note |
 |---|---|---|---|---|---|---|
@@ -221,8 +221,8 @@ So the original pipeline **set unmeasured genes to 0**: of 30,833 genes in the o
 
 - Reproduction: the original recipe (log2(x + 1) of the zero-filled matrix, genes z-scored across all 307 samples) applied to the rebuilt matrix reproduces `pathway_scores_gsva.tsv` (max |difference| 5.3e-03; minimum per-pathway r 1.000000). That recipe log-transforms the microarray values a second time, and its z-scores mix platforms and studies, so pathway scores carry the same zero-filling artefact as the gene matrix.
 - An R port of the §5 within-study model matches `cfd_reanalysis.py` on the stored scores (max |Δ estimate| 4.8e-15, max |Δ p| 2.2e-13).
-- The gene sets in `hormone_carbon_model.py` repeat 63 gene entries within their own set (in 20 of 28 pathways); the original scores count a repeated gene more than once. The worst case is AT5G52640 in heat_shock: 21 of its 32 entries, so the stored heat_shock score is mostly that one gene. The rescored version counts each gene once (`pathway_genesets.tsv`; repeats in `pathway_geneset_repeats.tsv`).
-- Gene-set curation (UniProt-checked; `pathway_geneset_corrections.tsv`, applied to the rescored scores only): AT4G21840 removed (MSRB8, peptide methionine sulfoxide reductase B8; not a heat shock protein); 12 genes added to heat_shock (HSFA1a, HSFA1b, HSFA1d, HSFA1e, HSFA2, HSFA3, HSFA7a, HSFA7b, HSFB1, HSFB2a, HSFB2b, HSP101 (CLPB1)). heat_shock now has 21 genes, of which 17 are measured in every study (`pathway_gene_coverage_by_study.tsv`).
+- The gene sets in `hormone_carbon_model.py` repeat 63 gene entries within their own set (in 20 of 28 pathways); the original scores count a repeated gene more than once. The worst case is AT5G52640 in heat_shock: 21 of its 32 entries, so the stored heat_shock score is mostly that one gene. The rescored version counts each gene once: `pathway_genesets.tsv` is the original list as extracted, repeats are listed in `pathway_geneset_repeats.tsv`, and de-duplication and the corrections below are applied in `followups_2026-10.R`.
+- Gene-set curation (UniProt-checked; `pathway_geneset_corrections.tsv`, applied to the rescored scores only): AT4G21840 removed (MSRB8, peptide methionine sulfoxide reductase B8; not a heat shock protein); 12 genes added to heat_shock (HSFA1a, HSFA1b, HSFA1d, HSFA1e, HSFA2, HSFA3, HSFA7a, HSFA7b, HSFB1, HSFB2a, HSFB2b, HSP101 (CLPB1)). heat_shock now has 21 genes, of which 17–21 are measured per study (`pathway_gene_coverage_by_study.tsv`).
 - Rescored per study: RNA-seq as log2-CPM from RSEM expected counts (TMM, `filterByExpr`), microarray on its published log2 scale, each gene z-scored within its study, no zero-filling. 0 of 308 pathway × study cells have fewer than 3 measured genes and are left missing (`pathway_gene_coverage_by_study.tsv`).
 
 Within-study model (`score ~ study + flight × scale`, CR1 by study, BH per term), pathways with FDR < 0.05 out of 28:
@@ -326,7 +326,7 @@ Agreement of flight logFC between units from different studies (Pearson r across
 For reference, different organs within the same study agree at median r = 0.35. Spearman medians for the first three rows: 0.42, 0.01 and -0.01 (`platform_concordance_summary.tsv`).
 
 - **Finding:** within BRIC, the RNA-seq studies share a reproducible flight response (median r 0.40 between studies), but the microarray studies agree neither with each other (0.01) nor with the RNA-seq studies (-0.03; whole seedlings only: -0.04). The microarray units also detect few flight genes (median 5.5 at FDR < 0.05, against 7,381 in the BRIC RNA-seq units). The platform split in §9 is therefore weak or absent flight signal in the microarray studies, not an opposite response; it can come from the platform's lower sensitivity and smaller groups, or from the earlier flights those studies represent, and this design cannot separate the two. Across hardware, even RNA-seq studies agree poorly (median r 0.09), in line with the study-specific flight response in §12.
-- Caveats: one unit per study × organ with small groups (some 3 vs 3 or 3 vs 9), so single-pair correlations are noisy; OSD-7 is APEX-TAGES hardware filed under BRIC (§2); microarray logFCs are compressed relative to RNA-seq, which changes slopes but not correlations.
+- Caveats: one unit per study × organ with small groups (some 3 vs 3 or 3 vs 9), so single-pair correlations are noisy; OSD-7 is APEX-TAGES hardware filed under BRIC (§2); OSD-678's samples with organ 'unknown' are treated as whole seedlings, as in the original pipeline; microarray logFCs are compressed relative to RNA-seq, which changes slopes but not correlations.
 
 ## Not done here
 

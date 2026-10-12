@@ -52,7 +52,7 @@ OSDR hardware -> CFD class used for the v2 covariates (`extract_cfd.py`). Ground
 | EMCS | EMCS | OSD-314 | 17 |
 | Veggie | VEGGIE | OSD-217, OSD-678 | 48 |
 
-## 3. Original method (Pearson, n = 307, BH)
+## 3. Original method (Pearson, BH; n = 307 for the stored covariates, 290 for v2, which EMCS lacks)
 
 Differs from the stored `pathway_cfd_correlations.tsv` (these are not the stored scores): 84/84 pathway x covariate rows compared, max |Δr| = 6.33e-01.
 
@@ -92,7 +92,7 @@ Of the 5 pathways 'significant' for g_bl by Pearson, 0 have any FDR < 0.05 term 
 - `CFD_g_bl` (logFC per 1 mol m⁻² s⁻¹; the covariate spans only 0.709, SD 0.253): |logFC| > 1 & FDR < 0.05 → 3633 genes. The same genes per 1 SD of g_bl: |logFC·SD| > 1 → 813; per full observed range: 3010. The cutoff counts depend on the unit chosen, so for a continuous covariate report FDR plus an effect size per SD or per observed range.
 ## 7. In-dish covariate (LunarLeaf T19)
 
-`g_bl_dish` (leaf conductance to the dish's own air, in the real BRIC 60 mm / CARA 120 mm dish) is defined for 97 leaf samples in BRIC or CARA hardware from 5 studies. It is NaN for rosette-scale and VEGGIE samples, so it is kept as a separate column rather than replacing `g_bl`.
+`g_bl_dish` (leaf conductance to the dish's own air, in the real BRIC 60 mm / CARA 120 mm dish) is defined for 97 leaf-scale samples (leaf, hypocotyl, root and cell culture are mapped to leaf scale) in BRIC or CARA hardware from 5 studies. It is NaN for rosette-scale and VEGGIE samples, so it is kept as a separate column rather than replacing `g_bl`.
 
 | cfd_hardware | gravity_key | n | studies | g_bl_dish | g_bl_open_box | note |
 |---|---|---|---|---|---|---|
