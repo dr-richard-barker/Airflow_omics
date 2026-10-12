@@ -97,13 +97,13 @@ Within BRIC, the RNA-seq and microarray flight effects were uncorrelated ($r = -
 \begin{itemize}
     \item The three BRIC RNA-seq studies agreed with one another (median $r = 0.40$).
     \item The BRIC microarray studies agreed neither with each other (median $r = 0.01$) nor with the RNA-seq studies ($-0.03$; whole seedlings only, $-0.04$).
-    \item The microarray units detected a median of 5.5 flight genes at FDR $< 0.05$, against 7,381 in the BRIC RNA-seq units.
+    \item The microarray units detected a median of 5.5 flight genes at FDR $< 0.05$, against a median of 7,381 in the BRIC RNA-seq units.
 \end{itemize}
 The platform split is therefore weak or absent flight signal in the microarray studies, not an opposite response. These are the earlier flights (BRIC, and APEX-TAGES for OSD-7), so platform and flight era cannot be separated. Across hardware, even RNA-seq studies agreed poorly (median $r = 0.09$).
 
 \subsection*{CFD covariates do not explain which studies respond}
 
-Each CFD covariate is set by hardware class, gravity, organ scale and ground-control enclosure, so neither can be separated from study.
+Each CFD covariate is set by hardware class, gravity, organ scale and ground-control enclosure, so neither covariate can be separated from study.
 \begin{itemize}
     \item \textbf{$g_{bl}$} relabels the flight $\times$ organ-scale cells (variance inflation factor 14.2).
     \item \textbf{Carbon supply} is a hardware label once BRIC ground controls are given the sealed-dish value: study membership explains 86\% of its variance, and it varies within only two studies, OSD-7 (unsealed ground controls) and OSD-120 (CARA), where it coincides with the flight contrast.
@@ -185,7 +185,7 @@ The flight effect was estimated separately in each study $\times$ organ unit wit
 
 The 28 curated gene sets were checked against UniProt. Repeated entries were removed, one misassigned gene was removed from the heat-shock set, and the heat-shock transcription factors and HSP101 were added. Scores were computed within each study as the mean within-study $z$-score of member genes. RNA-seq expression was taken as log\textsubscript{2} counts per million, and microarray as published log\textsubscript{2} intensities.
 
-Each pathway score was modelled as $\sim$ study + flight $\times$ scale, with effect coding. Standard errors were cluster-robust (CR1) by study \citep{cameron2015}, with $t$ tests on $G - 1$ degrees of freedom; terms identified within fewer than two studies were not tested. Study-level flight effects were meta-regressed on the CFD-predicted penalty with Knapp--Hartung inference \citep{knapp2003}. Positive controls added a known flight effect to every pathway and recorded detection.
+Each pathway score was modelled as $\sim$ study + flight $\times$ scale, with effect coding. Standard errors were cluster-robust (CR1) by study \citep{cameron2015}, with $t$ tests on $G - 1$ degrees of freedom; terms identified within fewer than two studies were not tested. Study-level flight effects were meta-regressed with Knapp--Hartung inference \citep{knapp2003} on the predicted penalty: the increase in the magnitude of the mean leaf-surface CO\textsubscript{2} gap from ground to flight in each study $\times$ scale unit (flight values from the LunarLeaf-CFD hardware scenes, T10, whose BRIC and CARA runs had not reached steady state; ground values from the open-box scene). Positive controls added a known flight effect to every pathway and recorded detection.
 
 \subsection*{CFD}
 
