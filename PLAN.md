@@ -1,5 +1,7 @@
 # PLAN: NASA OSDR Multiomics Mining for Microgravity Atmospheric Adaptation Model
 
+> **Superseded planning document (August 2026).** This is the original project plan. Its statements are aims and working assumptions, not results; several (study and sample counts, the CFD-driven working title, the acceptance criteria) did not hold up. For the evidenced results see [`reports/HEADLINE_2026-10.md`](reports/HEADLINE_2026-10.md) and [`tables/reanalysis_2026-10/REANALYSIS.md`](tables/reanalysis_2026-10/REANALYSIS.md).
+
 ## Summary
 
 Mine the NASA OSDR Biological Data API for Arabidopsis thaliana multiomics data (RNAseq, microarray, methylation/WGBS, glycomics, proteomics) from Col-0 and WS ecotypes grown on the ISS, build a multi-factorial mixed-effects model (light × organ/tissue × flight × hardware), integrate CFD gas-exchange predictions from LunarLeaf-CFD as continuous covariates, use single-cell RNA-seq atlases to train a variational autoencoder (VAE) for tissue-specific deconvolution of bulk samples, and produce a tissue/organ-specific hormonal and primary carbon allocation adaptation model visualized with ggPlantmap and ggkegg. Deliver as a new standalone npj Microgravity-style LaTeX manuscript with a Zenodo-ready standard package (code + figures + tables + supplementary tables).

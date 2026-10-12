@@ -373,6 +373,10 @@ for _, srow in meta.iterrows():
         # APEX-TAGES ground controls were not sealed (R. Barker, 2026-10-12)
         out["carbon_12h_pct_earth"] = 100.0
         out["A_start_umol_m2_s"] = out["A_end_umol_m2_s"] = np.nan
+        out["enclosure_type"] = "unsealed"
+        for c in ("g_bl_dish_mol_m2_s", "g_bl_dish_vs_ambient", "dish_headspace_mm"):
+            out[c] = np.nan
+        out["g_bl_dish_note"] = ""
     sample_cfd.append(out)
 
 sample_cfd_df = pd.DataFrame(sample_cfd)

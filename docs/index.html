@@ -34,7 +34,7 @@
   <div class="wrap">
     <h2>Overview</h2>
     <p class="sub">The flight response is real but largely specific to each experiment.</p>
-    <p>A flight effect shared by all 11 studies explains under 1 % of gene variance, against 7–11 % for study-specific flight effects. Within BRIC hardware, only the RNA-seq studies agree with each other. Neither CFD-predicted boundary-layer conductance nor carbon supply explains which studies respond, and the CFD shows why. Inside a real flight dish, gravity changes leaf gas exchange only 1.25–1.8-fold, and sealed BRIC dishes run short of CO₂ on the ground as well as in orbit.</p>
+    <p>A flight effect shared by all 11 studies explains under 1 % of gene variance, against 7–11 % for study-specific flight effects. Within BRIC hardware, only the RNA-seq studies agree with each other. Neither CFD-predicted boundary-layer conductance nor carbon supply explains which studies respond, and the CFD shows why. Inside a real flight dish, gravity changes leaf gas exchange only about 1.4–1.8-fold, and sealed BRIC dishes run short of CO₂ on the ground as well as in orbit.</p>
     <div class="cards" style="margin-top:22px">
       <div class="card"><div class="stat">≤ 0.3 %</div><h3>Shared flight response</h3>
         <p>Mean share of gene variance explained by a flight effect common to all studies (0.3 % pooled, under 0.01 % in RNA-seq alone).</p></div>
@@ -62,8 +62,8 @@
     <h2><span class="n">02</span>A study-specific flight response</h2>
     <p class="sub">A flight response common to all studies explains under 1 % of gene variance.</p>
     <figure>
-      <img src="assets/figures/fig2_variance_partition.png" alt="Grouped bars of mean percent variance per component; study dominates, the common flight effect is 0.3 and 0.6 percent, flight by study is 8.3 and 11.9 percent.">
-      <figcaption>Variance partition with every factor as a random effect and hardware nested in study, for the pooled data and RNA-seq only. Source: REANALYSIS §12, <code>followups/variance_partition_summary_v2.tsv</code>.</figcaption>
+      <img src="assets/figures/fig2_variance_partition.png" alt="Grouped bars of mean percent variance per component; study dominates, the common flight effect is 0.3 and under 0.01 percent, flight by study is 7.1 and 11.0 percent.">
+      <figcaption>Variance partition with every factor as a random effect and study nested in hardware, for the pooled data and RNA-seq only. Source: REANALYSIS §12, <code>followups/variance_partition_summary_v2.tsv</code>.</figcaption>
     </figure>
   </div>
 </section>
@@ -74,7 +74,7 @@
     <p class="sub">BRIC RNA-seq studies share a flight signature; the BRIC microarray studies detect almost none.</p>
     <figure>
       <img src="assets/figures/fig3_platform_concordance.png" alt="Heatmap of correlations between flight effects in 17 study-by-organ units; the three BRIC RNA-seq units correlate around 0.4, microarray units correlate near zero with them.">
-      <figcaption>Correlation of flight effects between study × organ units. The microarray studies are the earlier BRIC flights, so platform and flight era cannot be separated. Source: REANALYSIS §13.</figcaption>
+      <figcaption>Correlation of flight effects between study × organ units. The microarray studies are the earlier flights (BRIC, and APEX-TAGES for OSD-7), so platform and flight era cannot be separated. Source: REANALYSIS §13.</figcaption>
     </figure>
   </div>
 </section>
@@ -84,8 +84,8 @@
     <h2><span class="n">04</span>No pathway-level flight or CFD effect</h2>
     <p class="sub">No pathway responds once study structure is respected.</p>
     <figure>
-      <img src="assets/figures/fig4_pathway_flight_effects.png" alt="Dot plot of flight effects with 95 percent intervals for 28 pathways; all intervals are compatible with no effect after multiple-testing correction.">
-      <figcaption>Flight effect per pathway from a within-study model with cluster-robust errors, on pathway scores computed without zero-filling. The test detects only large effects. Source: REANALYSIS §10–§11.</figcaption>
+      <img src="assets/figures/fig4_pathway_flight_effects.png" alt="Dot plot of flight effects with 95 percent intervals for 28 pathways; no pathway reaches significance after multiple-testing correction.">
+      <figcaption>Flight effect per pathway from a within-study model with cluster-robust errors, on pathway scores computed without zero-filling. Intervals are unadjusted; no pathway reaches FDR &lt; 0.05, and the test detects only large effects. Source: REANALYSIS §10–§11.</figcaption>
     </figure>
   </div>
 </section>

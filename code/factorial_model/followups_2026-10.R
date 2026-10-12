@@ -222,8 +222,8 @@ detect_stored <- pos_control(stored); detect <- pos_control(S_new)
 sd_ratio <- median(apply(S_new, 2, sd)) / median(apply(stored, 2, sd))
 say(sprintf("  positive control: stored %d/28, %d/28; rescored %d/28, %d/28 (0.25 / 0.5 SD); rescored SD is %.2f x the stored SD",
             detect_stored[1], detect_stored[2], detect[1], detect[2], sd_ratio))
-fin <- ws_new[term %in% c("flight", "scale", "flight_x_scale"), all(is.finite(se))] && ws_rna[, all(is.finite(se))]
-say("  all flight / scale / interaction SEs finite: ", fin)
+fin <- ws_new[estimable == TRUE, all(is.finite(se))] && ws_rna[estimable == TRUE, all(is.finite(se))]
+say("  SEs finite for every tested (estimable) term: ", fin)
 
 writeLines(c(log_lines, "", capture.output(sessionInfo())), file.path(OUT, "followups_log.txt"))
 

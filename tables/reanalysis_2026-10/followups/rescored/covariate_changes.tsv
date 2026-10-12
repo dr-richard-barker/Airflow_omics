@@ -18,10 +18,10 @@ u_max	97
 surf_dC_H2O_hw	41
 surf_dC_CO2_hw	41
 fan_cm_s	41
+enclosure_type	35
 co2_drawdown_mean_ppm	17
 co2_drawdown_peak_ppm	17
 o2_buildup_mean_ppm	17
-enclosure_type	17
 Ra_H2O	17
 has_forced_airflow	17
 net_assimilation_pct	11

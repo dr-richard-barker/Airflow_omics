@@ -2,8 +2,8 @@
   cfd_hardware~osd_id 1.00; carbon_12h~osd_id 0.93; g_bl~flight 0.75; carbon_12h~cfd_hardware 0.86
 
 == variance partition ==
-  pooled_complete: 17129 genes x 307 samples, 1.5 min
-  rnaseq: 24774 genes x 213 samples, 1.2 min
+  pooled_complete: 17129 genes x 307 samples, 1.4 min
+  rnaseq: 24774 genes x 213 samples, 2.0 min
 
 R version 4.6.1 (2026-06-24)
 Platform: aarch64-apple-darwin25.4.0

@@ -219,6 +219,9 @@ writeLines(c(log_lines, "", capture.output(sessionInfo())), file.path(OUT, "refi
 # ---- REANALYSIS.md section 9 (inserted before "## Not done here") -------------
 v1n <- function(nm) { s <- stored(nm); sum(s$adj.P.Val < 0.05) }
 S <- function(n, col = "fdr05") format(summ[contrast == n][[col]], big.mark = ",")
+carb_var <- as.data.table(m2)[, .(n = uniqueN(carbon_12h[!is.na(carbon_12h)]),
+                                   flt = paste(unique(carbon_12h[flight == "FLT"]), collapse = "/"),
+                                   gc = paste(unique(carbon_12h[flight == "GC"]), collapse = "/")), by = osd_id][n > 1]
 f3 <- function(x) sprintf("%.3f", x); f4 <- function(x) sprintf("%.4f", x)
 rm1 <- repro_m1[[pick]]; cc_v <- setNames(cc$logFC_cor, cc$pair)
 sec <- c(
@@ -254,9 +257,12 @@ sec <- c(
   "",
   sprintf("- The within-BRIC and averaged flight effects agree only weakly (logFC correlation %s). The stored headline is the BRIC-specific effect.", f3(cc_v[[1]])),
   sprintf("- g_bl: VIF %.1f in Model 2. It takes 4 values and recodes flight × scale (§4), so its gene count is not a boundary-layer effect.", coll$g_bl[["vif"]]),
-  sprintf("- carbon_12h: study membership explains %.1f %% of its variance. v2 gives sealed BRIC samples 1 %% at both gravities and APEX-TAGES (OSD-7) ground controls 100 %%, so its only within-study variation is OSD-7's flight contrast. Its genes are hardware and OSD-7 flight differences, not a carbon dose response. The |logFC| > 1 count is 0 because the unit is 1 %% of Earth carbon.", 100 * coll$carbon_12h[["r2_study"]]),
+  sprintf("- carbon_12h: study membership explains %.1f %% of its variance. It varies within only %s, in each case between flight and ground (%s), so within studies it coincides with the flight contrast. Its genes are hardware and flight differences, not a carbon dose response. The |logFC| > 1 count is 0 because the unit is 1 %% of Earth carbon.",
+          100 * coll$carbon_12h[["r2_study"]], paste(carb_var$osd_id, collapse = " and "),
+          paste(sprintf("%s: flight %s / ground %s", carb_var$osd_id, carb_var$flt, carb_var$gc), collapse = "; ")),
   "",
-  "**Platform-separated sensitivity.** RNA-seq: voom on RSEM expected counts, `filterByExpr`, no zero-filling. Microarray: limma-trend on log2 intensities. All microarray samples are BRIC, so hardware terms and carbon_12h drop out there.",
+  sprintf("**Platform-separated sensitivity.** RNA-seq: voom on RSEM expected counts, `filterByExpr`, no zero-filling. Microarray: limma-trend on log2 intensities. All microarray samples are in the BRIC class, so hardware terms drop out there; carbon_12h %s.",
+          if ("carbon_12h" %in% colnames(ra2$X)) "remains estimable on microarray only through OSD-7, whose ground controls were unsealed (100 %) while its flight samples take the sealed value" else "drops out as well"),
   "",
   "| contrast | RNA-seq | microarray |",
   "|---|---|---|",
@@ -264,7 +270,7 @@ sec <- c(
   sprintf("| flight within BRIC | %s | %s |", S("RNAseq_Flight_within_BRIC"), S("Array_Flight_within_BRIC")),
   sprintf("| flight averaged over hardware | %s | — |", S("RNAseq_Flight_avg_over_HW")),
   sprintf("| g_bl | %s | %s |", S("RNAseq_CFDv2_g_bl"), S("Array_CFDv2_g_bl")),
-  sprintf("| carbon_12h | %s | not estimable |", S("RNAseq_CFDv2_carbon_12h")),
+  sprintf("| carbon_12h | %s | %s |", S("RNAseq_CFDv2_carbon_12h"), if ("Array_CFDv2_carbon_12h" %in% summ$contrast) S("Array_CFDv2_carbon_12h") else "not estimable"),
   "",
   sprintf("- Within BRIC, the RNA-seq and microarray flight effects are uncorrelated (logFC r = %s), and the pooled within-BRIC effect does not track the microarray one (r = %s). The pooled averaged effect does track the RNA-seq-only one (r = %s).",
           f3(cc_v[[4]]), f3(cc_v[[3]]), f3(cc_v[[2]])),

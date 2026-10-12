@@ -75,13 +75,17 @@ f1 = save(fig, "fig1_study_design.png")
 
 # ---- Fig 2: variance partition ------------------------------------------------
 vp = pd.read_csv(os.path.join(TAB, "followups/variance_partition_summary_v2.tsv"), sep="\t")
+# gene and sample counts per data set, from the variance-partition run log
+import re
+VPN = {m.group(1): (int(m.group(2)), int(m.group(3))) for m in
+       re.finditer(r"(pooled_complete|rnaseq): (\d+) genes x (\d+) samples", open(os.path.join(TAB, "followups/variance_partition_log.txt")).read())}
 comp = [("osd_id", "study (within hardware)"), ("light", "light"), ("ecotype_simple", "ecotype"),
         ("organ_simple", "organ"), ("cfd_hardware", "hardware"), ("flight", "flight, common to all studies"),
         ("flight:cfd_hardware", "flight × hardware"), ("flight:osd_id", "flight × study"), ("Residuals", "residual")]
 fig, ax = plt.subplots(figsize=(6.4, 3.6))
 y = np.arange(len(comp))[::-1]
-for k, (data, col, lab) in enumerate([("pooled_complete", BLUE, "pooled (17,129 genes, 307 samples)"),
-                                      ("rnaseq", TEAL, "RNA-seq only (23,531 genes, 213 samples)")]):
+for k, (data, col, lab) in enumerate([("pooled_complete", BLUE, "pooled ({:,} genes, {} samples)".format(*VPN["pooled_complete"])),
+                                      ("rnaseq", TEAL, "RNA-seq only ({:,} genes, {} samples)".format(*VPN["rnaseq"]))]):
     v = vp[vp.data == data].set_index("component").mean_pct
     vals = [v[c] for c, _ in comp]
     ax.barh(y + (0.19 if k == 0 else -0.19), vals, height=0.36, color=col, label=lab)

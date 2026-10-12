@@ -29,10 +29,10 @@ LUNARLEAF_OLD_TABLES not set: mapping check skipped.
 | surf_dC_H2O_hw | 41 |
 | surf_dC_CO2_hw | 41 |
 | fan_cm_s | 41 |
+| enclosure_type | 35 |
 | co2_drawdown_mean_ppm | 17 |
 | co2_drawdown_peak_ppm | 17 |
 | o2_buildup_mean_ppm | 17 |
-| enclosure_type | 17 |
 | Ra_H2O | 17 |
 | has_forced_airflow | 17 |
 | net_assimilation_pct | 11 |
@@ -92,11 +92,11 @@ Of the 5 pathways 'significant' for g_bl by Pearson, 0 have any FDR < 0.05 term 
 - `CFD_g_bl` (logFC per 1 mol m⁻² s⁻¹; the covariate spans only 0.709, SD 0.253): |logFC| > 1 & FDR < 0.05 → 3633 genes. The same genes per 1 SD of g_bl: |logFC·SD| > 1 → 813; per full observed range: 3010. The cutoff counts depend on the unit chosen, so for a continuous covariate report FDR plus an effect size per SD or per observed range.
 ## 7. In-dish covariate (LunarLeaf T19)
 
-`g_bl_dish` (leaf conductance to the dish's own air, in the real BRIC 60 mm / CARA 120 mm dish) is defined for 112 leaf samples in BRIC or CARA hardware from 5 studies. It is NaN for rosette-scale and VEGGIE samples, so it is kept as a separate column rather than replacing `g_bl`.
+`g_bl_dish` (leaf conductance to the dish's own air, in the real BRIC 60 mm / CARA 120 mm dish) is defined for 97 leaf samples in BRIC or CARA hardware from 5 studies. It is NaN for rosette-scale and VEGGIE samples, so it is kept as a separate column rather than replacing `g_bl`.
 
 | cfd_hardware | gravity_key | n | studies | g_bl_dish | g_bl_open_box | note |
 |---|---|---|---|---|---|---|
-| BRIC | earth | 38 | 4 | 0.33 | 0.997 | indicative: sealed 1 g not steady, beyond Boussinesq limit |
+| BRIC | earth | 23 | 3 | 0.33 | 0.997 | indicative: sealed 1 g not steady, beyond Boussinesq limit |
 | BRIC | ug | 38 | 4 | 0.185 | 0.443 | steady |
 | CARA | earth | 18 | 1 | 0.263 | 0.997 | steady |
 | CARA | ug | 18 | 1 | 0.186 | 0.443 | steady |
@@ -137,4 +137,4 @@ Within-study model on this subset (`score ~ study + flight + flight × CARA`, CR
 
 ## Not done here
 
-The gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`), its follow-ups §10 (`followups_2026-10.R`), the rescored §5/§7/§8 comparison §11 (`code/cfd_covariates/rescored_comparison.py`), the variance partition §12 (`variance_partition_2026-10.R`) and the platform comparison §13 (`platform_concordance_2026-10.R`); run them in that order after `cfd_meta_regression.py`. No analysis items from this reanalysis remain open. Open for the authors: the headline claim and the manuscript, README and site text that follow from it; the RNA-seq vs microarray result (§13) is to be reported as a finding.
+The gene-level refit is §9 (`code/factorial_model/refit_gene_level_2026-10.R`), its follow-ups §10 (`followups_2026-10.R`), the rescored §5/§7/§8 comparison §11 (`code/cfd_covariates/rescored_comparison.py`), the variance partition §12 (`variance_partition_2026-10.R`) and the platform comparison §13 (`platform_concordance_2026-10.R`); run them in that order after `cfd_meta_regression.py`. No analysis items remain open. The headline claim is in `reports/HEADLINE_2026-10.md`; the manuscript still needs the author ORCID and an archival DOI.

@@ -227,6 +227,11 @@ def main():
     apex_gc = (meta_new.hardware == "APEX-TAGES") & (meta_new.gravity_key == "earth")
     meta_new.loc[apex_gc, "carbon_12h_pct_earth"] = 100.0
     meta_new.loc[apex_gc, ["A_start_umol_m2_s", "A_end_umol_m2_s"]] = np.nan
+    # nor do the sealed-dish quantities apply to them
+    meta_new.loc[apex_gc, "enclosure_type"] = "unsealed"
+    for c in ["g_bl_dish_mol_m2_s", "g_bl_dish_vs_ambient", "dish_headspace_mm"]:
+        if c in meta_new: meta_new.loc[apex_gc, c] = np.nan
+    if "g_bl_dish_note" in meta_new: meta_new.loc[apex_gc, "g_bl_dish_note"] = ""
     meta_new.to_csv(os.path.join(OUT, "expression_metadata_with_cfd_v2.tsv"), sep="\t", index=False)
     changed = compare(meta, meta_new, cfd_cols)
     changed = changed[changed.n_mismatch > 0].sort_values("n_mismatch", ascending=False)
