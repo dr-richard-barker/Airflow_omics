@@ -31,7 +31,8 @@ os.makedirs(OUT, exist_ok=True)
 
 BLUE, TEAL, ORANGE = "#3B6EA5", "#2A9D8F", "#C46A1F"
 INK, MUTED, RULE = "#16212E", "#56657A", "#D9E0E8"
-HW_COL = {"BRIC": BLUE, "CARA": TEAL, "VEGGIE": ORANGE}
+HW_COL = {"BRIC": BLUE, "CARA": TEAL, "VEGGIE": ORANGE, "EMCS": "#7A8794"}  # EMCS: neutral gray, no CFD scenario
+HW_ORDER = {"BRIC": 0, "CARA": 1, "VEGGIE": 2, "EMCS": 3}
 plt.rcParams.update({
     "font.family": "DejaVu Sans", "font.size": 9, "axes.edgecolor": MUTED, "axes.labelcolor": INK,
     "xtick.color": MUTED, "ytick.color": MUTED, "axes.spines.top": False, "axes.spines.right": False,
@@ -53,7 +54,7 @@ meta = pd.read_csv(os.path.join(TAB, "expression_metadata_with_cfd_v2.tsv"), sep
 d = (meta.groupby(["osd_id", "hardware", "cfd_hardware", "omics_type"])
      .agg(flt=("flight", lambda x: (x == "FLT").sum()), gc=("flight", lambda x: (x == "GC").sum()))
      .reset_index())
-d["order"] = d.cfd_hardware.map({"BRIC": 0, "CARA": 1, "VEGGIE": 2})
+d["order"] = d.cfd_hardware.map(HW_ORDER)
 d = d.sort_values(["order", "omics_type", "osd_id"], ascending=[True, False, True]).reset_index(drop=True)
 fig, ax = plt.subplots(figsize=(6.4, 3.9))
 y = np.arange(len(d))[::-1]
@@ -68,7 +69,7 @@ ax.set_yticklabels([f"{r.osd_id}  ({r.hardware})" for r in d.itertuples()], font
 ax.set_xlabel("samples (solid: flight, light: ground control)")
 ax.set_xlim(0, d.eval("flt + gc").max() + 26)
 ax.legend(handles=[Patch(color=c, label=f"{hw} class") for hw, c in HW_COL.items()], frameon=False, loc="lower right", fontsize=8)
-ax.set_title(f"{len(meta)} samples, {meta.osd_id.nunique()} OSDR studies, grouped by CFD hardware class",
+ax.set_title(f"{len(meta)} samples, {meta.osd_id.nunique()} OSDR studies, grouped by hardware class",
              loc="left", fontsize=10, color=INK)
 f1 = save(fig, "fig1_study_design.png")
 
@@ -98,7 +99,7 @@ f2 = save(fig, "fig2_variance_partition.png")
 # ---- Fig 3: platform concordance --------------------------------------------
 U = pd.read_csv(os.path.join(TAB, "followups/platform_concordance_units.tsv"), sep="\t")
 P = pd.read_csv(os.path.join(TAB, "followups/platform_concordance_pairs.tsv"), sep="\t")
-U["order"] = U.hardware.map({"BRIC": 0, "CARA": 1, "VEGGIE": 2}) * 2 + (U.platform == "microarray")
+U["order"] = U.hardware.map(HW_ORDER) * 2 + (U.platform == "microarray")
 U = U.sort_values(["order", "unit"]).reset_index(drop=True)
 names = list(U.unit)
 M = pd.DataFrame(np.nan, index=names, columns=names)
@@ -135,7 +136,7 @@ cb.set_label("Pearson r of flight logFC", fontsize=8)
 for spine in ax.spines.values():
     spine.set_visible(False)
 ax.set_title("Flight effects agree between BRIC RNA-seq studies, not with the microarray studies\n"
-             "(labels coloured by hardware: blue BRIC, teal CARA, orange VEGGIE; blocks by hardware × platform)",
+             "(labels coloured by hardware: blue BRIC, teal CARA, orange VEGGIE, gray EMCS; blocks by hardware × platform)",
              loc="left", fontsize=9, color=INK)
 f3 = save(fig, "fig3_platform_concordance.png")
 

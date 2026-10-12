@@ -34,10 +34,10 @@
   <div class="wrap">
     <h2>Overview</h2>
     <p class="sub">The flight response is real but largely specific to each experiment.</p>
-    <p>A flight effect shared by all 11 studies explains under 1 % of gene variance, against 8–12 % for study-specific flight effects. Within BRIC hardware, only the RNA-seq studies agree with each other. Neither CFD-predicted boundary-layer conductance nor carbon supply explains which studies respond, and the CFD shows why. Inside a real flight dish, gravity changes leaf gas exchange only 1.25–1.8-fold, and sealed BRIC dishes run short of CO₂ on the ground as well as in orbit.</p>
+    <p>A flight effect shared by all 11 studies explains under 1 % of gene variance, against 7–11 % for study-specific flight effects. Within BRIC hardware, only the RNA-seq studies agree with each other. Neither CFD-predicted boundary-layer conductance nor carbon supply explains which studies respond, and the CFD shows why. Inside a real flight dish, gravity changes leaf gas exchange only 1.25–1.8-fold, and sealed BRIC dishes run short of CO₂ on the ground as well as in orbit.</p>
     <div class="cards" style="margin-top:22px">
-      <div class="card"><div class="stat">0.3–0.6 %</div><h3>Shared flight response</h3>
-        <p>Mean share of gene variance explained by a flight effect common to all studies (pooled and RNA-seq only).</p></div>
+      <div class="card"><div class="stat">≤ 0.3 %</div><h3>Shared flight response</h3>
+        <p>Mean share of gene variance explained by a flight effect common to all studies (0.3 % pooled, under 0.01 % in RNA-seq alone).</p></div>
       <div class="card"><div class="stat">r = 0.40</div><h3>BRIC RNA-seq agreement</h3>
         <p>Median correlation of flight effects between BRIC RNA-seq studies. The BRIC microarray studies agree with none of them.</p></div>
       <div class="card"><div class="stat">0 / 28</div><h3>Pathways</h3>
@@ -49,10 +49,10 @@
 <section>
   <div class="wrap">
     <h2><span class="n">01</span>The data</h2>
-    <p class="sub">307 samples from 11 studies, in three CFD hardware classes.</p>
+    <p class="sub">307 samples from 11 studies, in four hardware classes.</p>
     <figure>
       <img src="assets/figures/fig1_study_design.png" alt="Horizontal bars of flight and ground-control sample counts for each of 11 OSDR studies, coloured by hardware class, with platform labels.">
-      <figcaption>Flight and ground-control samples per study. APEX-TAGES (OSD-7) is grouped with BRIC and EMCS (OSD-314) with VEGGIE. Source: <code>tables/reanalysis_2026-10/expression_metadata_with_cfd_v2.tsv</code>.</figcaption>
+      <figcaption>Flight and ground-control samples per study. APEX-TAGES (OSD-7) flight samples are grouped with BRIC; its ground controls were not sealed. EMCS (OSD-314) has no CFD scenario and is its own class. Source: <code>tables/reanalysis_2026-10/expression_metadata_with_cfd_v2.tsv</code>.</figcaption>
     </figure>
   </div>
 </section>

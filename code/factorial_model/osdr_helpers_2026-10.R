@@ -60,7 +60,8 @@ prep_meta <- function(meta) {
   meta$osd_id <- factor(meta$osd_id)
   meta$g_bl <- as.numeric(meta$g_bl_mol_m2_s)
   meta$carbon_12h <- as.numeric(meta$carbon_12h_pct_earth)
-  meta$cfd_hardware <- factor(meta$cfd_hardware, levels = c("BRIC", "CARA", "VEGGIE"))
+  # EMCS (OSD-314) is its own class with no CFD scenario (confirmed by R. Barker, 2026-10-12)
+  meta$cfd_hardware <- factor(meta$cfd_hardware, levels = c("BRIC", "CARA", "VEGGIE", "EMCS"))
   os <- as.character(meta$organ); os[os %in% "unknown"] <- "whole_seedling"
   meta$organ_simple <- factor(os)
   ec <- as.character(meta$ecotype); ec[ec %in% c("Ler-0", "Cvi-0")] <- "other"
@@ -96,11 +97,15 @@ n_sig <- function(r) c(fdr05 = sum(r$adj.P.Val < 0.05),
 F1 <- ~ flight * cfd_hardware + organ_simple + light + ecotype_simple
 F2 <- ~ flight + g_bl + carbon_12h + organ_simple + light + ecotype_simple
 
-# Flight averaged over BRIC/CARA/VEGGIE (treatment coding, reference BRIC)
+# Flight averaged over the hardware classes in the design (treatment coding, reference BRIC)
 avg_flight <- function(X) {
   c <- setNames(numeric(ncol(X)), colnames(X))
   c["flightFLT"] <- 1
   ints <- grep("^flightFLT\\.cfd_hardware", colnames(X), value = TRUE)
-  c[ints] <- 1 / 3
+  c[ints] <- 1 / (length(ints) + 1)   # equal weight on every hardware class in the design
   matrix(c, ncol = 1, dimnames = list(colnames(X), "Flight_avg_over_HW"))
 }
+
+# Samples with every covariate a formula needs (EMCS has no CFD covariates). model.matrix
+# would drop incomplete rows silently and break the alignment with the expression data.
+cc_rows <- function(meta, f) complete.cases(meta[, intersect(all.vars(f), names(meta)), drop = FALSE])

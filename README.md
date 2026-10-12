@@ -16,11 +16,11 @@ The claim, its evidence and what it does not say are in [`reports/HEADLINE_2026-
 
 | | Result | Source |
 |---|---|---|
-| Data | 307 expression samples (153 flight, 154 ground) from 11 OSDR studies: 213 RNA-seq (7 studies) and 94 microarray (4 studies). | `tables/reanalysis_2026-10/expression_metadata_with_cfd_v2.tsv` |
-| Study-specific response | A flight effect common to all studies explains 0.3 % of gene variance (0.6 % in RNA-seq alone); study-specific flight effects 8–12 %; study 45–53 %. | REANALYSIS §12 |
-| Flight contrasts | The stored "flight main effect" is the flight effect within BRIC (11,675 genes at FDR < 0.05). Averaged over BRIC, CARA and VEGGIE it is 4,598 genes. | §6, §9 |
+| Data | 307 expression samples (153 flight, 154 ground) from 11 OSDR studies: 213 RNA-seq (7 studies) and 94 microarray (4 studies), in four hardware classes (BRIC, CARA, VEGGIE, EMCS). | `tables/reanalysis_2026-10/expression_metadata_with_cfd_v2.tsv` |
+| Study-specific response | A flight effect common to all studies explains 0.3 % of gene variance (under 0.01 % in RNA-seq alone); study-specific flight effects 7–11 %; study 44–53 %. | REANALYSIS §12 |
+| Flight contrasts | The stored "flight main effect" is the flight effect within BRIC (11,797 genes at FDR < 0.05). Averaged over the four hardware classes it is 2,981 genes. | §6, §9 |
 | Platform | BRIC RNA-seq studies agree with each other (median r = 0.40). The BRIC microarray studies agree with nothing (median r ≈ 0) and detect almost no flight genes. | §13 |
-| CFD covariates | g_bl takes one value per gravity × organ-scale cell. Study membership explains 99.9 % of carbon_12h's variance. Neither is identifiable from study and hardware. | §4, §9 |
+| CFD covariates | g_bl takes one value per gravity × organ-scale cell. Study membership explains 86 % of carbon_12h's variance, and its only within-study variation is OSD-7's flight contrast. Neither is identifiable from study and hardware. | §2, §4, §9 |
 | Pathways | 0/28 pathways show a flight effect or a CFD dose-response in study-aware models, on correctly computed scores. The tests rule out only large effects. | §10, §11 |
 | CFD | In the real BRIC and CARA dishes, gravity changes leaf conductance 1.25–1.8-fold (2.25-fold in an open box). Sealed BRIC dishes become carbon-limited at 1 g as well as in orbit. | LunarLeaf-CFD T19–T22, §7 |
 

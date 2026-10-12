@@ -1,7 +1,7 @@
 == 4a. Pooled fit without zero-filled genes ==
   genes measured in all 11 studies: 17129; after CPM filter: 17129 (zero-filled fit: 25,453)
-  rho: Model 1 0.6412, Model 2 0.6841 (zero-filled: 0.7327, 0.7588)
-  complete-case averaged flight vs RNA-seq-only averaged flight: logFC r = 0.893 (n = 17017)
+  rho: Model 1 0.6349, Model 2 0.6564 (zero-filled: 0.7327, 0.7588)
+  complete-case averaged flight vs RNA-seq-only averaged flight: logFC r = 0.900 (n = 17103)
 
 == 4b. Pathway scores ==
   rebuilt vs stored scores: max |diff| = 5.33e-03, min per-pathway r = 1.000000

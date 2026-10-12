@@ -22,7 +22,7 @@
      - **Consequence:** the Earth-equivalent fan speed (the airflow that restores Earth-level surface gradients in µg) is **2.0 cm/s for a leaf, not 2.8**, and **≈ 6.5 cm/s for a rosette, not 11**. At the VEGGIE setting (8.3 cm/s) the old snapshot understated the leaf's g_bl by 17 % (1.525 vs a steady 1.841).
   3. **The grid is not the limiting error at 0 g.** A three-level resolution ladder (dx 0.288 → 0.144 mm) converges monotonically. The production grid is within 2.0 % (0 g) and 5.5 % (1 g) of the extrapolated g_bl, and the Earth/µg contrast moves from 2.25× to 2.19× (§3.3).
   4. **The fix exposed a solver limit.** With the fan now carrying its full flow, air squeezing between rosette leaves and canopy shoots exceeds the lattice-Boltzmann low-Mach limit (Ma > 0.3) at the faster fan speeds, and three runs blew up. Excluding those runs, **the canopy never reaches its Earth level** within the valid range (≤ 6.6 cm/s). The old "≈ 21 cm/s" canopy figure came from extrapolating past the data. A canopy answer at higher speeds needs a finer lattice.
-  5. **Follow-up (§3.6): the 0 g conductance depends on the modelled chamber, and the omics CFD statistics do not survive study structure.** Doubling the chamber lowers 0 g g_bl by 33 % (leaf) and 41 % (rosette) with no plateau, while 1 g moves ≤ 7 %. In this package, g_bl is a relabelling of flight × organ; a within-study model finds no pathway with an FDR-significant flight, scale or interaction term, and a meta-regression's single hit (1/28 pathways, a VEGGIE-versus-sealed-hardware difference) does not survive correct pathway scoring (0/28; REANALYSIS §11).
+  5. **Follow-up (§3.6): the 0 g conductance depends on the modelled chamber, and the omics CFD statistics do not survive study structure.** Doubling the chamber lowers 0 g g_bl by 33 % (leaf) and 41 % (rosette) with no plateau, while 1 g moves ≤ 7 %. In this package, g_bl is a relabelling of flight × organ; a within-study model finds no pathway with an FDR-significant flight, scale or interaction term, and a meta-regression finds no dose-response on correctly scored pathways (0/28; REANALYSIS §11).
 
 ## 2. How the two models compare
 
@@ -213,7 +213,7 @@ Consequences:
   - **1/28 pathways** (GA biosynthesis, p = 8 × 10⁻⁴).
   - That one signal is equally well explained by a VEGGIE-vs-other indicator, and shows no slope within BRIC alone. It is a hardware-associated difference, not a dose-response.
   - A DerSimonian–Laird z-test would have claimed 14/28; it is over-confident with this few units.
-  - On correctly rescored pathways the meta-regression finds 0/28; GA biosynthesis drops to FDR 0.094 (REANALYSIS §11).
+  - Updated 2026-10-12: with EMCS (OSD-314) excluded for lack of a CFD scenario, the stored-score result is 6/28 on 13 units; on correctly rescored pathways it is 0/28, with GA biosynthesis at FDR 0.11 (REANALYSIS §8, §11).
 - **Gene-level checks (stored DE tables).**
   - `Flight_FLT_vs_GC` equals the BRIC-only contrast for all 25,453 genes.
   - The g_bl |logFC| > 1 count drops from 3,633 to 813 when expressed per SD.
@@ -318,7 +318,7 @@ The option is flagged as unsafe at 1 g. Wet agar at 1 g needs a calibrated humid
 - **The README says 16 studies; the data contain 11** (307 samples).
 - **`Flight_FLT_vs_GC` is the flight effect within BRIC**, the reference level, not the flight main effect. That is why it is identical to `Flight_BRIC_FLT_vs_GC` (476/264).
 - **|logFC| > 1 for continuous covariates depends on units** (per 1 mol m⁻² s⁻¹ of g_bl).
-- **Hardware is confounded with study.** CARA comes from OSD-120 alone, VEGGIE includes EMCS data relabelled (OSD-314), and BRIC includes the APEX-TAGES study OSD-7.
+- **Hardware is confounded with study.** CARA comes from OSD-120 alone. Since 2026-10-12, EMCS (OSD-314) is its own class without CFD covariates, and APEX-TAGES (OSD-7) flight samples share the BRIC scenario while its unsealed ground controls keep 100 % carbon.
 - **fig6 B/C show identical bars across hardware**, because g_bl does not depend on hardware in T13.
 - **Roots are assigned leaf-scale g_bl.**
 - **Reproducibility:** hard-coded `/mnt/shared-workspace` and `/workspace` paths (only the LunarLeaf table path can now be overridden); no `requirements.txt` or `sessionInfo`; LunarLeaf commit not pinned; `CITATION.cff` ORCID is a placeholder.

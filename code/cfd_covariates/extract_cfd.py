@@ -10,10 +10,13 @@ CFD model scenarios (from LunarLeaf-CFD):
 Hardware mapping (OSDR hardware -> CFD scenario):
   BRIC       -> BRIC  (sealed)
   BRIC-LED   -> BRIC  (sealed, LED lighting - same enclosure physics)
-  APEX-TAGES -> BRIC  (sealed canister on Space Shuttle)
+  APEX-TAGES -> BRIC  (flight); its ground controls were not sealed (see below)
   CARA       -> CARA  (semi-permeable)
   Veggie     -> VEGGIE (vented + fan)
-  EMCS       -> VEGGIE (controlled atmosphere with gas exchange)
+  EMCS       -> EMCS  (own class, no LunarLeaf scenario: CFD covariates are NaN)
+  Ground-control enclosures (confirmed by R. Barker, 2026-10-12): BRIC ground controls use
+  the sealed flight hardware; APEX-TAGES ground controls were not sealed; CARA and VEGGIE
+  ground controls were grown in the ISS Environmental Simulator (ISSES) chamber at KSC.
 
 Gravity mapping:
   FLT (Space Flight) -> microgravity (g=0)
@@ -214,10 +217,9 @@ for hw in HW_CFD:
             # BRIC ground controls use the same sealed hardware (confirmed by R. Barker,
             # 2026-10-08), so they get the BRIC value too, not 100 %: BRIC's carbon
             # deficit is a hardware effect shared by flight and ground.
-            # TODO: CARA/VEGGIE ground-control hardware not yet confirmed; they keep 100 %.
-            # TODO: `hw` is the CFD class, so this also covers APEX-TAGES (OSD-7, 18 ground
-            # controls), mapped to BRIC above. The confirmation was for BRIC; whether the
-            # APEX-TAGES ground controls were sealed is not yet confirmed.
+            # CARA and VEGGIE ground controls grew in the KSC ISSES chamber, not sealed: 100 %.
+            # APEX-TAGES ground controls (CFD class BRIC) were not sealed either; that is a
+            # per-sample override applied below, since this table is keyed by CFD class.
             if gkey == "earth" and hw != "BRIC":
                 row["carbon_12h_pct_earth"] = 100.0
             else:
@@ -313,7 +315,7 @@ HW_MAP = {
     "APEX-TAGES": "BRIC",
     "CARA": "CARA",
     "Veggie": "VEGGIE",
-    "EMCS": "VEGGIE",
+    "EMCS": "EMCS",   # no LunarLeaf scenario; not the vented VEGGIE class (R. Barker, 2026-10-12)
 }
 
 # Organ -> CFD scale mapping
@@ -367,6 +369,10 @@ for _, srow in meta.iterrows():
     }
     for c in cfd_cols:
         out[c] = cfd.get(c, np.nan)
+    if srow["hardware"] == "APEX-TAGES" and out["gravity_key"] == "earth":
+        # APEX-TAGES ground controls were not sealed (R. Barker, 2026-10-12)
+        out["carbon_12h_pct_earth"] = 100.0
+        out["A_start_umol_m2_s"] = out["A_end_umol_m2_s"] = np.nan
     sample_cfd.append(out)
 
 sample_cfd_df = pd.DataFrame(sample_cfd)

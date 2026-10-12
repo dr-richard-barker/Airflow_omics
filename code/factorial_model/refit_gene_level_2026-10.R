@@ -113,16 +113,19 @@ say("\n== 4. Refit, v2 covariates ==")
 m2 <- prep_meta(meta2)
 X1 <- drop_aliased(model.matrix(F1, m2))
 r1 <- fit_voom(dge, X1, m2$osd_id)
-X2 <- drop_aliased(model.matrix(F2, m2))
+# Model 2 needs the CFD covariates, which EMCS (OSD-314) does not have
+k2 <- cc_rows(m2, F2)
+X2 <- drop_aliased(model.matrix(F2, m2[k2, ]))
+say(sprintf("  Model 2: %d samples with CFD covariates (%d EMCS samples excluded)", sum(k2), sum(!k2)))
 say("  Model 2 design columns: ", paste(colnames(X2), collapse = ", "))
-r2 <- fit_voom(dge, X2, m2$osd_id)
+r2 <- fit_voom(dge[, k2], X2, m2$osd_id[k2])
 say(sprintf("  rho: Model 1 %.4f, Model 2 %.4f", r1$rho, r2$rho))
 
 # collinearity of the CFD covariates with study and hardware
 vif <- function(X, col) { o <- setdiff(colnames(X), c(col, "X.Intercept.")); 1 / (1 - summary(lm(X[, col] ~ X[, o]))$r.squared) }
 coll <- list()
 for (co in intersect(c("g_bl", "carbon_12h"), colnames(X2))) {
-  coll[[co]] <- c(vif = vif(X2, co), r2_study = summary(lm(X2[, co] ~ m2$osd_id))$r.squared)
+  coll[[co]] <- c(vif = vif(X2, co), r2_study = summary(lm(X2[, co] ~ droplevels(m2$osd_id[k2])))$r.squared)
   say(sprintf("  VIF %s = %.1f; R^2 on study dummies = %.3f", co, coll[[co]][["vif"]], coll[[co]][["r2_study"]]))
 }
 
@@ -161,6 +164,8 @@ fit_platform <- function(f, meta, fitter, data) {
     lab <- lab[!sapply(strsplit(lab, ":"), function(p) any(p %in% one))]
     f <- reformulate(lab)
   }
+  keep <- cc_rows(meta, f)   # e.g. EMCS has no CFD covariates
+  meta <- meta[keep, ]; data <- data[, keep]
   X <- drop_aliased(model.matrix(f, meta)); r <- fitter(data, X, meta$osd_id); r$X <- X; r
 }
 rr1 <- fit_platform(F1, mr, fit_voom, dr)
@@ -241,7 +246,7 @@ sec <- c(
   "| contrast | v1 (stored) | v2 refit |",
   "|---|---|---|",
   sprintf("| flight within BRIC (stored name `Flight_FLT_vs_GC`) | %s | %s (%s) |", format(v1n("Flight_FLT_vs_GC"), big.mark = ","), S("Flight_within_BRIC"), S("Flight_within_BRIC", "fdr05_absLFC1")),
-  sprintf("| **flight averaged over BRIC/CARA/VEGGIE** | not fitted | %s (%s) |", S("Flight_avg_over_HW"), S("Flight_avg_over_HW", "fdr05_absLFC1")),
+  sprintf("| **flight averaged over the hardware classes** | not fitted | %s (%s) |", S("Flight_avg_over_HW"), S("Flight_avg_over_HW", "fdr05_absLFC1")),
   sprintf("| flight × CARA | %s | %s |", format(v1n("Flight_x_HW_CARA_vs_BRIC"), big.mark = ","), S("Flight_x_HW_CARA")),
   sprintf("| flight × VEGGIE | %s | %s |", format(v1n("Flight_x_HW_VEGGIE_vs_BRIC"), big.mark = ","), S("Flight_x_HW_VEGGIE")),
   sprintf("| Model 2: g_bl | %s | %s |", format(v1n("CFD_g_bl"), big.mark = ","), S("CFDv2_g_bl")),
@@ -249,7 +254,7 @@ sec <- c(
   "",
   sprintf("- The within-BRIC and averaged flight effects agree only weakly (logFC correlation %s). The stored headline is the BRIC-specific effect.", f3(cc_v[[1]])),
   sprintf("- g_bl: VIF %.1f in Model 2. It takes 4 values and recodes flight × scale (§4), so its gene count is not a boundary-layer effect.", coll$g_bl[["vif"]]),
-  sprintf("- carbon_12h: study membership explains %.1f %% of its variance (v2 sets every BRIC sample to 1 %%). Its genes are a BRIC-studies-versus-the-rest contrast, not a carbon dose response. The |logFC| > 1 count is 0 because the unit is 1 %% of Earth carbon.", 100 * coll$carbon_12h[["r2_study"]]),
+  sprintf("- carbon_12h: study membership explains %.1f %% of its variance. v2 gives sealed BRIC samples 1 %% at both gravities and APEX-TAGES (OSD-7) ground controls 100 %%, so its only within-study variation is OSD-7's flight contrast. Its genes are hardware and OSD-7 flight differences, not a carbon dose response. The |logFC| > 1 count is 0 because the unit is 1 %% of Earth carbon.", 100 * coll$carbon_12h[["r2_study"]]),
   "",
   "**Platform-separated sensitivity.** RNA-seq: voom on RSEM expected counts, `filterByExpr`, no zero-filling. Microarray: limma-trend on log2 intensities. All microarray samples are BRIC, so hardware terms and carbon_12h drop out there.",
   "",
