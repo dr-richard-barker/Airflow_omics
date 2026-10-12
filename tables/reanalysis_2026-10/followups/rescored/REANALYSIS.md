@@ -51,7 +51,7 @@ TODO: confirm that the APEX-TAGES (OSD-7) ground controls were sealed like BRIC'
 Differs from the stored `pathway_cfd_correlations.tsv` (these are not the stored scores): 84/84 pathway x covariate rows compared, max |Δr| = 6.33e-01.
 
 - `g_bl_mol_m2_s`: FDR < 0.05 in 8/28 pathways with old covariates, 7/28 with new; max |r| 0.210 -> 0.217.
-- `carbon_12h_pct_earth`: FDR < 0.05 in 13/28 pathways with old covariates, 0/28 with new; max |r| 0.354 -> 0.005.
+- `carbon_12h_pct_earth`: FDR < 0.05 in 12/28 pathways with old covariates, 0/28 with new; max |r| 0.354 -> 0.005.
 - `delta_mm`: FDR < 0.05 in 13/28 pathways with old covariates, 13/28 with new; max |r| 0.311 -> 0.322.
 
 `carbon_12h_pct_earth` by hardware and flight (new covariates): BRIC FLT 1 / GC 1; CARA FLT 90 / GC 100; VEGGIE FLT 100 / GC 100. Within BRIC it no longer differs between flight and ground, so its correlation with pathway scores now reflects which studies used BRIC (a between-study, hardware difference), not a flight effect.
