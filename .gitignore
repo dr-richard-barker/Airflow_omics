@@ -1,3 +1,7 @@
 
 # ABAI attestation (local)
 .abai/
+
+# Combined DE table (136 MB): too large for GitHub (see tables/readme.md); kept locally only
+tables/de_results_all_contrasts.tsv
+tables/de_results_all_contrasts.tsv.zip
