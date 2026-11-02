@@ -8,6 +8,8 @@
 
 *Updated 2026-10-12 to match `tables/reanalysis_2026-10/REANALYSIS.md` §9–§12: the gene-level limma models were refit from the OSDR processed files, the pathway scores were recomputed without zero-filling or repeated genes, and the variance partition was redone. Where those change a statement below, the later result is given alongside.*
 
+*Updated 2026-11-02 to match LunarLeaf-CFD at `b5c18bd` (30 Oct): the wet-agar 0 g range for BRIC is 0.185–0.189, the MRT rerun (T24) is added, and the July slide deck was made with NotebookLM, not by hand, and has been retired.*
+
 ## 1. Bottom line
 
 - **The two projects complement each other more than they overlap.** The OpenFOAM project built a well-engineered 3D model of a whole chamber's airflow. That is the scale LunarLeaf doesn't resolve. LunarLeaf already has the physics the chamber model hasn't run yet: buoyancy, CO₂/O₂/H₂O transport, and 0 g vs 1 g.
@@ -167,7 +169,7 @@ A key visualization standard is to compute one colour range over all frames and 
 **Not regenerated:**
 - **T3 / T5:** need the raw Vernier data (`validation/raw/`), which is not on this machine. The T5 ppm values for µg will rise.
 - **T12:** transcribed by hand from console output.
-- **The slide deck:** `CFD_Spaceflight_Botany.pptx`/`.pdf` was made by hand and still shows the old numbers. (The paper text — `results/MANUSCRIPT.md`, `results/manuscript/manuscript.tex`, `results/DISCUSSION.md` and the `.docx` — has since been updated, with a TODO on T5; reference 5 was corrected in LunarLeaf PR #7.)
+- **The slide deck:** `CFD_Spaceflight_Botany.pptx`/`.pdf` was made with NotebookLM and still shows the old numbers. It was retired to `archive/2026-07-deck/` on 2026-10-12 (LunarLeaf PR #9) and replaced by a deck built from the current tables. (The paper text — `results/MANUSCRIPT.md`, `results/manuscript/manuscript.tex`, `results/DISCUSSION.md` and the `.docx` — has since been updated, with a TODO on T5; reference 5 was corrected in LunarLeaf PR #7.)
 - **The omics outputs downstream of `extract_cfd.py`:** since refit locally from the OSDR processed files (REANALYSIS §9–§12).
 
 ### 3.6 Follow-up analyses (2026-10-08)
@@ -274,13 +276,15 @@ With transpiration driven by the leaf-to-air humidity gap (T22; saturation level
 
 **In a sealed BRIC dish the 1 g and 0 g boundary layers converge within minutes**, so BRIC ground controls see nearly the same leaf-level gas exchange as flight. Real agar releases water, so a real dish is probably near saturation from the start, which strengthens this.
 
-**Wet agar (LunarLeaf T23), a negative result at 1 g.** Holding the agar surface at saturation leaves the 0 g leaf conductance unchanged (BRIC 0.186–0.189, CARA 0.192, the same as dry agar).
+**Wet agar (LunarLeaf T23), a negative result at 1 g.** Holding the agar surface at saturation leaves the 0 g leaf conductance unchanged (BRIC 0.185–0.189, CARA 0.192, the same as dry agar).
 
 At 1 g the agar-to-air humidity contrast pushes the H₂O buoyancy beyond the model's small-perturbation range:
 - Sealed BRIC accelerates from about 87 s and diverges at 129.5 s.
 - Taped CARA runs near Mach 0.17, then accelerates.
 
 The option is flagged as unsafe at 1 g. Wet agar at 1 g needs a calibrated humidity buoyancy coefficient (real RH values) before it can be modelled.
+
+A more stable collision scheme does not help (LunarLeaf T24, added 2026-10-13). With the opt-in MRT collision, which passes all four validation gates, the same runs break down sooner: sealed BRIC exceeds Mach 0.3 at 72 s and diverges at 82.5 s (BGK: 109 s and 129.5 s), and taped CARA exceeds Mach 0.3 at 64 s and diverges at 78 s (BGK: 86 s, finite to 104 s). The instability comes from the humidity forcing (β·ΔC ≈ 1.3), not the collision scheme.
 
 ## 4. Not yet borrowed (recommended next)
 
